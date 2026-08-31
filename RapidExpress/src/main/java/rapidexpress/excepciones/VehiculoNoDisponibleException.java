@@ -9,20 +9,23 @@ package rapidexpress.excepciones;
  * @author User
  */
 
+// Excepción lanzada si el vehículo seleccionado no puede usarse
+// (por estar en taller de mantenimiento, de baja o en medio de otra ruta).
 public class VehiculoNoDisponibleException extends Exception {
-    
-    // Constructor específico para placa
-    public VehiculoNoDisponibleException(String placa) {
-        super("El vehículo con placa " + placa + " no está disponible");
+
+    // Guarda la placa o matrícula única del vehículo.
+    private final String placa;
+
+    // Constructor que recibe la placa del vehículo y la razón de la indisponibilidad.
+    public VehiculoNoDisponibleException(String placa, String motivo) {
+        // Ensambla el mensaje conciso y lo transmite al constructor de la superclase.
+        super("El vehículo con placa " + placa + " no está disponible: " + motivo);
+        // Almacena la placa en el atributo de clase.
+        this.placa = placa;
     }
-    
-    // Constructor genérico con mensaje personalizado
-    public VehiculoNoDisponibleException(String mensaje, Throwable causa) {
-        super(mensaje, causa);
-    }
-    
-    // Constructor solo con causa
-    public VehiculoNoDisponibleException(Throwable causa) {
-        super(causa);
+
+    // Método de acceso para recuperar la placa del vehículo que generó la alerta.
+    public String getPlaca() {
+        return placa;
     }
 }

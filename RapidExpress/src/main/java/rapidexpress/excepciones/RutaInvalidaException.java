@@ -8,12 +8,24 @@ package rapidexpress.excepciones;
  *
  * @author User
  */
+
+// Excepción para representar violaciones en la lógica operativa de las rutas
+// (ejemplo: despachar una ruta sin paquetes o finalizar una ruta ya cerrada).
 public class RutaInvalidaException extends Exception {
-    public RutaInvalidaException(String mensaje) {
-        super(mensaje);
+
+    // Guarda el identificador único o código de la ruta procesada.
+    private final String codigoRuta;
+
+    // Constructor que toma el identificador de la ruta y el motivo del fallo operativo.
+    public RutaInvalidaException(String codigoRuta, String motivo) {
+        // Entrega la cadena explicativa con la ruta delimitada hacia la clase Exception.
+        super("Error de validación en la ruta [" + codigoRuta + "]: " + motivo);
+        // Preserva el código de la ruta en la variable interna.
+        this.codigoRuta = codigoRuta;
     }
-    
-    public RutaInvalidaException(String mensaje, Throwable causa) {
-        super(mensaje, causa);
+
+    // Método de acceso para obtener el código de la ruta involucrada.
+    public String getCodigoRuta() {
+        return codigoRuta;
     }
 }

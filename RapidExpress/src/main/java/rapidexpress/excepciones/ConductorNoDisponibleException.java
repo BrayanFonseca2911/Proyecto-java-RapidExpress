@@ -9,34 +9,23 @@ package rapidexpress.excepciones;
  * @author User
  */
 
+// Excepción lanzada cuando se intenta asignar a una ruta un conductor
+// que está inactivo, en vacaciones o asignado previamente a otra ruta activa.
 public class ConductorNoDisponibleException extends Exception {
-    
-    /**
-     * Constructor específico cuando se pasa el nombre del conductor.
-     * Genera automáticamente el mensaje de error.
-     * 
-     * @param nombre Nombre del conductor no disponible
-     */
-    public ConductorNoDisponibleException(String nombre) {
-        super("El conductor '" + nombre + "' no está disponible");
+
+    // Guarda el número de documento/cédula del conductor no disponible.
+    private final String cedulaConductor;
+
+    // Constructor que recibe el documento del conductor y el estado que impide su asignación.
+    public ConductorNoDisponibleException(String cedulaConductor, String estadoActual) {
+        // Construye y envía el mensaje explicativo a la clase base Exception.
+        super("El conductor con cédula " + cedulaConductor + " no se encuentra disponible. Estado actual: " + estadoActual);
+        // Guarda la cédula del conductor para identificación precisa en la vista.
+        this.cedulaConductor = cedulaConductor;
     }
-    
-    /**
-     * Constructor genérico con mensaje personalizado y causa del error.
-     * 
-     * @param mensaje Mensaje descriptivo del error
-     * @param causa Excepción original que provocó este error
-     */
-    public ConductorNoDisponibleException(String mensaje, Throwable causa) {
-        super(mensaje, causa);
-    }
-    
-    /**
-     * Constructor que solo recibe la causa del error.
-     * 
-     * @param causa Excepción original
-     */
-    public ConductorNoDisponibleException(Throwable causa) {
-        super(causa);
+
+    // Método de acceso para obtener la cédula del conductor asociado al error.
+    public String getCedulaConductor() {
+        return cedulaConductor;
     }
 }
