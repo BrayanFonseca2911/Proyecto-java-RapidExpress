@@ -4,60 +4,70 @@
  */
 package rapidexpress.util;
 
+// Se agrega la importación de FileInputStream que faltaba
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 /**
- *
+ * Propósito: Cargar y proporcionar el acceso a los parámetros de conexión
+ * de la base de datos a partir del archivo de propiedades del proyecto.
+ * 
  * @author User
  */
-
-/*Propósito: Lee configuración de base de datos.
-Atributos:
-private static Properties properties
-Métodos:
-static { properties = new Properties(); try { properties.load(new FileInputStream("database.properties")) } catch ... }
-public static String getDbUrl(): Retorna properties.getProperty("db.url")
-public static String getDbUser(): Retorna properties.getProperty("db.user")
-public static String getDbPassword(): Retorna properties.getProperty("db.password")
-public static String getDbDriver(): Retorna properties.getProperty("db.driver")*/
 public class Config {
-    private Properties properties;
-    
-    public Config() {
+
+    // Atributo estático que almacena las claves y valores del archivo de configuración.
+    private static Properties properties;
+
+    // Bloque de inicialización estático: se ejecuta una sola vez al cargar la clase en memoria.
+    static {
+        // Inicializa el objeto Properties.
         properties = new Properties();
-        cargarConfiguracion();
-    }
-    
-    private void cargarConfiguracion() {
-        try (InputStream input = getClass().getClassLoader()
-                .getResourceAsStream("database.properties")) {
+        
+        // Se corrige el nombre a "DataBase.properties" respetando las mayúsculas del proyecto
+        try (InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("DataBase.properties")) {
             
-            if (input == null) {
-                System.out.println("Lo siento, no se pudo encontrar el archivo database.properties");
-                return;
+            // Verifica si el recurso fue encontrado dentro del classpath.
+            if (input != null) {
+                // Carga los pares clave-valor dentro de la instancia de Properties.
+                properties.load(input);
+            } else {
+                // Intenta la lectura directa si no se encuentra en el classpath.
+                try (FileInputStream fileInput = new FileInputStream("DataBase.properties")) {
+                    properties.load(fileInput);
+                } catch (IOException e) {
+                    System.err.println("Error: No se encontró el archivo 'DataBase.properties'.");
+                }
             }
             
-            properties.load(input);
-            
         } catch (IOException ex) {
+            // Imprime la traza de la excepción en caso de falla de lectura de I/O.
             ex.printStackTrace();
         }
     }
-    
-    public String getDbUrl() {
+
+    // Constructor privado para impedir que se creen instancias con 'new Config()'.
+    private Config() {}
+
+    // Retorna la URL de conexión a la base de datos (clave 'db.url').
+    public static String getDbUrl() {
         return properties.getProperty("db.url");
     }
-    
-    public String getDbUser() {
+
+    // Retorna el usuario autenticado de la base de datos (clave 'db.user').
+    public static String getDbUser() {
         return properties.getProperty("db.user");
     }
-    
-    public String getDbPassword() {
+
+    // Retorna la contraseña del usuario de la base de datos (clave 'db.password').
+    public static String getDbPassword() {
         return properties.getProperty("db.password");
     }
-    
-    public String getDbDriver() {
+
+    // Retorna el nombre completo de la clase del Driver JDBC (clave 'db.driver').
+    public static String getDbDriver() {
         return properties.getProperty("db.driver");
     }
 }

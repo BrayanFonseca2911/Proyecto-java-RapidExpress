@@ -1,70 +1,43 @@
 package rapidexpress.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
 /**
  * Gestiona la conexión a la base de datos MySQL (Patrón Singleton)
  * 
  * @author User
  */
+
+// Importación de la interfaz Connection para manejar la sesión activa con la base de datos MySQL.
+import java.sql.Connection;
+// Importación del administrador de controladores JDBC que establece la conexión con la base de datos.
+import java.sql.DriverManager;
+// Importación de la excepción de SQL para capturar fallos de autenticación, puerto o red.
+import java.sql.SQLException;
+
+// Clase de utilidad encubierta que provee conexiones estáticas a la base de datos del sistema.
 public class DBConnection {
+
+    // Cadena de conexión JDBC que especifica el host (localhost), puerto (3307), nombre de la BD (rapidexpress_db) y parámetros de seguridad/zona horaria.
+    private static final String URL = "jdbc:mysql://localhost:3307/appdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     
-    private static DBConnection instance;
-    private Connection connection;
+    // Usuario administrador por defecto para acceder a la base de datos MySQL.
+    private static final String USER = "root";
     
-    // Configuración de la base de datos
-    private final String URL = "jdbc:mysql://localhost:3306/rapidexpress";
-    private final String USER = "root";
-    private final String PASSWORD = "tu_contraseña";
-    private final String DRIVER = "com.mysql.cj.jdbc.Driver";
-    
-    /**
-     * Constructor privado (Singleton)
-     */
-    private DBConnection() {
+    // Contraseña asignada para la autenticación del usuario root en la instancia local.
+    private static final String PASSWORD = "industryPIGS123";
+
+    // Constructor privado para evitar que la clase de utilidad sea instanciada directamente con 'new DBConnection()'.
+    private DBConnection() {}
+
+    // Método estático público que crea y retorna una conexión activa a MySQL.
+    public static Connection getConnection() throws SQLException {
         try {
-            Class.forName(DRIVER);
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Conexión establecida correctamente");
+            // Carga dinámicamente en memoria la clase del controlador (Driver) de MySQL Connector/J.
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            // Solicita al DriverManager una conexión utilizando las credenciales y la URL configuradas.
+            return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (ClassNotFoundException e) {
-            System.err.println("Driver MySQL no encontrado: " + e.getMessage());
-        } catch (SQLException e) {
-            System.err.println("Error al conectar a la base de datos: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Obtiene la instancia única de la conexión
-     * @return Instancia de DBConnection
-     */
-    public static DBConnection getInstance() {
-        if (instance == null) {
-            instance = new DBConnection();
-        }
-        return instance;
-    }
-    
-    /**
-     * Obtiene la conexión activa
-     * @return Objeto Connection
-     */
-    public Connection getConnection() {
-        return connection;
-    }
-    
-    /**
-     * Cierra la conexión
-     */
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Conexión cerrada");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al cerrar la conexión: " + e.getMessage());
+            // En caso de no encontrar la librería JAR del conector de MySQL, relanza el error encapsulado en una SQLException.
+            throw new SQLException("No se encontró el driver JDBC de MySQL en el classpath: " + e.getMessage(), e);
         }
     }
 }
