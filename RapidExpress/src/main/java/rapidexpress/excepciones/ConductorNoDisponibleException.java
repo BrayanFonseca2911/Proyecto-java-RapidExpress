@@ -1,31 +1,47 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.excepciones;
 
 /**
- *
+ * Excepción que se lanza cuando un conductor no está disponible 
+ * para ser asignado a un vehículo o ruta.
+ * 
  * @author User
  */
-
-// Excepción lanzada cuando se intenta asignar a una ruta un conductor
-// que está inactivo, en vacaciones o asignado previamente a otra ruta activa.
 public class ConductorNoDisponibleException extends Exception {
-
-    // Guarda el número de documento/cédula del conductor no disponible.
-    private final String cedulaConductor;
-
-    // Constructor que recibe el documento del conductor y el estado que impide su asignación.
-    public ConductorNoDisponibleException(String cedulaConductor, String estadoActual) {
-        // Construye y envía el mensaje explicativo a la clase base Exception.
-        super("El conductor con cédula " + cedulaConductor + " no se encuentra disponible. Estado actual: " + estadoActual);
-        // Guarda la cédula del conductor para identificación precisa en la vista.
-        this.cedulaConductor = cedulaConductor;
+    
+    private String numeroIdentificacion;
+    
+    /**
+     * Constructor específico para conductor no disponible por identificación
+     * @param numeroIdentificacion Número de identificación del conductor
+     */
+    public ConductorNoDisponibleException(String numeroIdentificacion) {
+        super("El conductor con identificación '" + numeroIdentificacion + 
+              "' no está disponible. Verifique que esté ACTIVO y sin vehículo asignado.");
+        this.numeroIdentificacion = numeroIdentificacion;
     }
-
-    // Método de acceso para obtener la cédula del conductor asociado al error.
-    public String getCedulaConductor() {
-        return cedulaConductor;
+    
+    /**
+     * Constructor con mensaje y causa
+     * @param mensaje Descripción del error
+     * @param causa Excepción original
+     */
+    public ConductorNoDisponibleException(String mensaje, Throwable causa) {
+        super(mensaje, causa);
+    }
+    
+    /**
+     * Constructor solo con causa
+     * @param causa Excepción original
+     */
+    public ConductorNoDisponibleException(Throwable causa) {
+        super(causa);
+    }
+    
+    /**
+     * Obtiene el número de identificación del conductor
+     * @return Número de identificación
+     */
+    public String getNumeroIdentificacion() {
+        return numeroIdentificacion;
     }
 }

@@ -1,31 +1,47 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.excepciones;
 
 /**
- *
+ * Excepción que se lanza cuando no se encuentra un paquete 
+ * con el tracking ID especificado.
+ * 
  * @author User
  */
-
-// Excepción que indica que la búsqueda de un paquete mediante su código
-// de seguimiento no retornó ningún resultado en el sistema.
 public class PaqueteNotFoundException extends Exception {
-
-    // Almacena el número o código de seguimiento consultado.
-    private final String numeroSeguimiento;
-
-    // Constructor que recibe la clave de seguimiento que falló en la búsqueda.
-    public PaqueteNotFoundException(String numeroSeguimiento) {
-        // Forma el mensaje de notificación de error y lo asigna a la clase base.
-        super("No existe ningún paquete registrado con el número de seguimiento: " + numeroSeguimiento);
-        // Retiene el código para mostrarlo en los logs o respuestas del CLI.
-        this.numeroSeguimiento = numeroSeguimiento;
+    
+    private String trackingId;
+    
+    /**
+     * Constructor específico para paquete no encontrado por tracking ID
+     * @param trackingId ID de tracking del paquete no encontrado
+     */
+    public PaqueteNotFoundException(String trackingId) {
+        super("No se encontró ningún paquete con el tracking ID: '" + trackingId + "'. " +
+              "Verifique que el ID sea correcto.");
+        this.trackingId = trackingId;
     }
-
-    // Método de acceso para obtener el número de seguimiento ingresado.
-    public String getNumeroSeguimiento() {
-        return numeroSeguimiento;
+    
+    /**
+     * Constructor con mensaje y causa
+     * @param mensaje Descripción del error
+     * @param causa Excepción original
+     */
+    public PaqueteNotFoundException(String mensaje, Throwable causa) {
+        super(mensaje, causa);
+    }
+    
+    /**
+     * Constructor solo con causa
+     * @param causa Excepción original
+     */
+    public PaqueteNotFoundException(Throwable causa) {
+        super(causa);
+    }
+    
+    /**
+     * Obtiene el tracking ID del paquete no encontrado
+     * @return Tracking ID
+     */
+    public String getTrackingId() {
+        return trackingId;
     }
 }

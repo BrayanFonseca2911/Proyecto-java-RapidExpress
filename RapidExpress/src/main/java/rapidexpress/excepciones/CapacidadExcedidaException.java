@@ -1,47 +1,69 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.excepciones;
 
 /**
- *
+ * Excepción que se lanza cuando se intenta exceder la capacidad máxima 
+ * de carga de un vehículo.
+ * 
  * @author User
  */
-
-// Excepción de regla de negocio que se dispara cuando la carga total
-// de paquetes sobrepasa el límite de peso permitido por el vehículo.
 public class CapacidadExcedidaException extends Exception {
-
-    // Almacena el límite máximo de kilogramos que soporta el vehículo.
-    private final double capacidadMax;
     
-    // Almacena el peso total en kilogramos que se intentaba asignar.
-    private final double pesoIntentado;
-
-    // Constructor que recibe el límite del vehículo y el peso total que generó el exceso.
-    public CapacidadExcedidaException(double capacidadMax, double pesoIntentado) {
-        // Invoca al constructor padre formateando un mensaje con los datos calculados.
-        super(String.format("Capacidad excedida: El vehículo soporta %.2f kg pero se intentó cargar %.2f kg (Exceso: %.2f kg)", 
-                capacidadMax, pesoIntentado, (pesoIntentado - capacidadMax)));
-        // Asigna la capacidad máxima al atributo de clase.
-        this.capacidadMax = capacidadMax;
-        // Asigna el peso intentado al atributo de clase.
+    private double capacidadMaxima;
+    private double pesoIntentado;
+    
+    /**
+     * Constructor con mensaje personalizado
+     * @param mensaje Descripción del error
+     */
+    public CapacidadExcedidaException(String mensaje) {
+        super(mensaje);
+    }
+    
+    /**
+     * Constructor específico para capacidad excedida
+     * @param capacidadMaxima Capacidad máxima del vehículo en kg
+     * @param pesoIntentado Peso total que se intentó cargar en kg
+     */
+    public CapacidadExcedidaException(double capacidadMaxima, double pesoIntentado) {
+        super("La capacidad del vehículo ha sido excedida. " +
+              "Máximo permitido: " + capacidadMaxima + " kg, " +
+              "Peso intentado: " + pesoIntentado + " kg, " +
+              "Exceso: " + (pesoIntentado - capacidadMaxima) + " kg");
+        this.capacidadMaxima = capacidadMaxima;
         this.pesoIntentado = pesoIntentado;
     }
-
-    // Calcula y retorna la cantidad exacta de kilogramos que sobrepasan el límite.
-    public double getExceso() {
-        return pesoIntentado - capacidadMax;
+    
+    /**
+     * Constructor con mensaje y causa
+     * @param mensaje Descripción del error
+     * @param causa Excepción original que provocó este error
+     */
+    public CapacidadExcedidaException(String mensaje, Throwable causa) {
+        super(mensaje, causa);
     }
-
-    // Método de acceso para obtener la capacidad máxima registrada.
-    public double getCapacidadMax() {
-        return capacidadMax;
+    
+    /**
+     * Constructor solo con causa
+     * @param causa Excepción original
+     */
+    public CapacidadExcedidaException(Throwable causa) {
+        super(causa);
     }
-
-    // Método de acceso para obtener el peso total que se intentó registrar.
+    
+    // Getters
+    public double getCapacidadMaxima() {
+        return capacidadMaxima;
+    }
+    
     public double getPesoIntentado() {
         return pesoIntentado;
+    }
+    
+    /**
+     * Calcula el exceso de peso
+     * @return Cantidad de kg que exceden la capacidad
+     */
+    public double getExceso() {
+        return pesoIntentado - capacidadMaxima;
     }
 }

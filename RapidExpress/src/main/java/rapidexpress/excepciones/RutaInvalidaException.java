@@ -1,31 +1,55 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.excepciones;
 
 /**
- *
+ * Excepción que se lanza cuando una ruta tiene datos inválidos 
+ * o no cumple con las reglas de negocio.
+ * 
  * @author User
  */
-
-// Excepción para representar violaciones en la lógica operativa de las rutas
-// (ejemplo: despachar una ruta sin paquetes o finalizar una ruta ya cerrada).
 public class RutaInvalidaException extends Exception {
-
-    // Guarda el identificador único o código de la ruta procesada.
-    private final String codigoRuta;
-
-    // Constructor que toma el identificador de la ruta y el motivo del fallo operativo.
-    public RutaInvalidaException(String codigoRuta, String motivo) {
-        // Entrega la cadena explicativa con la ruta delimitada hacia la clase Exception.
-        super("Error de validación en la ruta [" + codigoRuta + "]: " + motivo);
-        // Preserva el código de la ruta en la variable interna.
-        this.codigoRuta = codigoRuta;
+    
+    private Integer rutaId;
+    
+    /**
+     * Constructor específico para ruta inválida por ID
+     * @param rutaId ID de la ruta inválida
+     * @param razon Razón por la cual la ruta es inválida
+     */
+    public RutaInvalidaException(Integer rutaId, String razon) {
+        super("La ruta con ID " + rutaId + " es inválida: " + razon);
+        this.rutaId = rutaId;
     }
-
-    // Método de acceso para obtener el código de la ruta involucrada.
-    public String getCodigoRuta() {
-        return codigoRuta;
+    
+    /**
+     * Constructor con mensaje personalizado
+     * @param mensaje Descripción del error
+     */
+    public RutaInvalidaException(String mensaje) {
+        super(mensaje);
+    }
+    
+    /**
+     * Constructor con mensaje y causa
+     * @param mensaje Descripción del error
+     * @param causa Excepción original
+     */
+    public RutaInvalidaException(String mensaje, Throwable causa) {
+        super(mensaje, causa);
+    }
+    
+    /**
+     * Constructor solo con causa
+     * @param causa Excepción original
+     */
+    public RutaInvalidaException(Throwable causa) {
+        super(causa);
+    }
+    
+    /**
+     * Obtiene el ID de la ruta inválida
+     * @return ID de la ruta
+     */
+    public Integer getRutaId() {
+        return rutaId;
     }
 }

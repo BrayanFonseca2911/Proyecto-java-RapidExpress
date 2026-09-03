@@ -1,31 +1,71 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.excepciones;
 
 /**
- *
+ * Excepción que se lanza cuando ocurre un error en las operaciones 
+ * de base de datos (conexión, consultas, transacciones, etc.).
+ * 
  * @author User
  */
-
-// Excepción personalizada para capturar y centralizar los errores técnicos
-// relacionados con la base de datos (por ejemplo: fallos de conexión o consultas SQL).
 public class DataBaseException extends Exception {
-
-    // Variable inmutable para almacenar la operación técnica donde ocurrió el fallo (ej. "INSERT_VEHICULO").
-    private final String operacion;
-
-    // Constructor que recibe el mensaje descriptive, el nombre de la operación y la causa raíz del error.
-    public DataBaseException(String mensaje, String operacion, Throwable causa) {
-        // Pasa el mensaje descriptivo y el objeto causa (ej. SQLException) a la clase padre Exception.
-        super(mensaje, causa);
-        // Guarda la operación en el atributo local para su posterior consulta.
-        this.operacion = operacion;
+    
+    private String operacion;
+    private String tabla;
+    
+    /**
+     * Constructor con mensaje personalizado
+     * @param mensaje Descripción del error
+     */
+    public DataBaseException(String mensaje) {
+        super(mensaje);
     }
-
-    // Método de acceso para obtener el nombre de la operación que causó la excepción.
+    
+    /**
+     * Constructor específico para errores de base de datos
+     * @param operacion Tipo de operación que falló (INSERT, UPDATE, DELETE, SELECT)
+     * @param tabla Nombre de la tabla afectada
+     * @param mensaje Descripción detallada del error
+     */
+    public DataBaseException(String operacion, String tabla, String mensaje) {
+        super("Error en " + operacion + " sobre tabla '" + tabla + "': " + mensaje);
+        this.operacion = operacion;
+        this.tabla = tabla;
+    }
+    
+    /**
+     * Constructor con mensaje y causa
+     * @param mensaje Descripción del error
+     * @param causa Excepción original (generalmente SQLException)
+     */
+    public DataBaseException(String mensaje, Throwable causa) {
+        super(mensaje, causa);
+    }
+    
+    /**
+     * Constructor específico con operación, tabla y causa
+     * @param operacion Tipo de operación que falló
+     * @param tabla Nombre de la tabla afectada
+     * @param causa Excepción original
+     */
+    public DataBaseException(String operacion, String tabla, Throwable causa) {
+        super("Error en " + operacion + " sobre tabla '" + tabla + "': " + causa.getMessage(), causa);
+        this.operacion = operacion;
+        this.tabla = tabla;
+    }
+    
+    /**
+     * Constructor solo con causa
+     * @param causa Excepción original
+     */
+    public DataBaseException(Throwable causa) {
+        super(causa);
+    }
+    
+    // Getters
     public String getOperacion() {
         return operacion;
+    }
+    
+    public String getTabla() {
+        return tabla;
     }
 }
