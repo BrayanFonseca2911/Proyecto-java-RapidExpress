@@ -1,0 +1,87 @@
+%% RapidExpress - Diagrama Entidad-Relacion
+%% Fuente editable del ERD. Ver database/diagrama_entidad_relacion.png
+%% para la imagen exportada (o el Artifact publicado en la conversacion).
+erDiagram
+    VEHICULO ||--o{ CONDUCTOR : "asignado a"
+    VEHICULO ||--o{ RUTA : "circula en"
+    VEHICULO ||--o{ MANTENIMIENTO : "recibe"
+    CONDUCTOR ||--o{ RUTA : "conduce"
+    REMITENTE ||--o{ PAQUETE : "envia"
+    DESTINATARIO ||--o{ PAQUETE : "recibe"
+    RUTA ||--o{ RUTA_PAQUETE : "incluye"
+    PAQUETE ||--o{ RUTA_PAQUETE : "asignado en"
+
+    VEHICULO {
+        int id PK
+        string placa UK
+        string marca
+        string modelo
+        int anio
+        decimal capacidad_carga
+        enum estado
+    }
+    CONDUCTOR {
+        int id PK
+        string numero_identificacion UK
+        string nombre
+        string tipo_licencia
+        string contacto
+        enum estado
+        int vehiculo_id FK
+    }
+    REMITENTE {
+        int id PK
+        string nombre
+        string direccion
+        string telefono
+    }
+    DESTINATARIO {
+        int id PK
+        string nombre
+        string direccion
+        string telefono
+    }
+    PAQUETE {
+        int id PK
+        string tracking_id UK
+        string descripcion
+        decimal peso
+        string dimensiones
+        string origen
+        string destino
+        enum estado
+        int remitente_id FK
+        int destinatario_id FK
+        datetime fecha_registro
+        datetime fecha_entrega
+    }
+    RUTA {
+        int id PK
+        int vehiculo_id FK
+        int conductor_id FK
+        datetime fecha
+        enum estado
+        decimal peso_total
+    }
+    RUTA_PAQUETE {
+        int ruta_id PK_FK
+        int paquete_id PK_FK
+    }
+    MANTENIMIENTO {
+        int id PK
+        int vehiculo_id FK
+        datetime fecha
+        string descripcion
+        decimal costo
+        int kilometraje
+    }
+    AUDITORIA {
+        int id PK
+        datetime fecha
+        string usuario
+        string accion
+        string tabla_afectada
+        string registro_id
+        string detalle
+        string ip
+    }
