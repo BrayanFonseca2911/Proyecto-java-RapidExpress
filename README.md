@@ -184,3 +184,4 @@ ejecuta la aplicacion.
 ## Autores
 
 - Brayan Fonseca ([@BrayanFonseca2911](https://github.com/BrayanFonseca2911))
+- Yeison Pallares ([@ypd651](https://github.com/ypd651))
