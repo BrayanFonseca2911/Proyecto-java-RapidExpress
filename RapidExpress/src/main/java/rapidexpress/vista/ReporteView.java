@@ -21,12 +21,12 @@ public class ReporteView {
         ConsoleUtil.imprimirTitulo("REPORTES");
 
         System.out.println("\n   1. Entregas por conductor en rango de fechas");
-        System.out.println("   2. Historial de rutas de un vehículo");
+        System.out.println("   2. Historial de rutas de un vehiculo");
         System.out.println("   3. Resumen de paquetes por estado");
-        System.out.println("   4. Vehículos en mantenimiento");
-        System.out.println("   5. Volver al menú principal");
+        System.out.println("   4. Vehiculos en mantenimiento");
+        System.out.println("   5. Volver al menu principal");
         ConsoleUtil.imprimirSeparador();
-        System.out.print("\n   Seleccione una opción: ");
+        System.out.print("\n   Seleccione una opcion: ");
     }
 
     /**
@@ -85,10 +85,10 @@ public class ReporteView {
      * @param historial Lista de descripciones de rutas
      */
     public void mostrarHistorialVehiculo(String placa, List<String> historial) {
-        ConsoleUtil.imprimirTitulo("Historial de Rutas - Vehículo " + placa);
+        ConsoleUtil.imprimirTitulo("Historial de Rutas - Vehiculo " + placa);
 
         if (historial == null || historial.isEmpty()) {
-            ConsoleUtil.imprimirAdvertencia("No hay rutas registradas para este vehículo");
+            ConsoleUtil.imprimirAdvertencia("No hay rutas registradas para este vehiculo");
             ConsoleUtil.pausar();
             return;
         }
@@ -105,10 +105,10 @@ public class ReporteView {
      * @param vehiculos Lista de vehículos en mantenimiento
      */
     public void mostrarVehiculosEnMantenimiento(List<Vehiculo> vehiculos) {
-        ConsoleUtil.imprimirTitulo("Vehículos en Mantenimiento");
+        ConsoleUtil.imprimirTitulo("Vehiculos en Mantenimiento");
 
         if (vehiculos == null || vehiculos.isEmpty()) {
-            ConsoleUtil.imprimirAdvertencia("No hay vehículos en mantenimiento");
+            ConsoleUtil.imprimirAdvertencia("No hay vehiculos en mantenimiento");
             ConsoleUtil.pausar();
             return;
         }
@@ -119,7 +119,7 @@ public class ReporteView {
         vehiculos.forEach(v -> System.out.printf("   %-10s | %-15s | %-15s | %-10.2f%n",
                 v.getPlaca(), v.getMarca(), v.getModelo(), v.getCapacidadCarga()));
 
-        System.out.println("\n   Total: " + vehiculos.size() + " vehículo(s) en mantenimiento");
+        System.out.println("\n   Total: " + vehiculos.size() + " vehiculo(s) en mantenimiento");
         ConsoleUtil.pausar();
     }
 

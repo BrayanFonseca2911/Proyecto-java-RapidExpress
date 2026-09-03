@@ -25,7 +25,7 @@ public class MantenimientoDAO implements IMantenimientoDAO {
         this.dbConnection = DBConnection.getInstance();
         this.vehiculoDAO = new VehiculoDAO();
     } catch (DataBaseException e) {
-        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
+        System.err.println("Error al conectar con la base de datos: " + e.getMessage());
         throw new RuntimeException("No se pudo inicializar MantenimientoDAO", e);
     }
 }

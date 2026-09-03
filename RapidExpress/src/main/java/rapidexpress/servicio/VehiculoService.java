@@ -53,7 +53,7 @@ public class VehiculoService {
         // Validar que la placa no exista
         Vehiculo existente = vehiculoDAO.buscarPorPlaca(vehiculo.getPlaca());
         if (existente != null) {
-            throw new VehiculoNoDisponibleException("Ya existe un vehículo con la placa: " + vehiculo.getPlaca());
+            throw new VehiculoNoDisponibleException("Ya existe un vehiculo con la placa: " + vehiculo.getPlaca());
         }
         
         // Validar datos
@@ -64,7 +64,7 @@ public class VehiculoService {
         
         // Registrar auditoría
         registrarAuditoria("CREATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
-                          "Se registró vehículo con placa " + vehiculo.getPlaca());
+                          "Se registro vehículo con placa " + vehiculo.getPlaca());
     }
     
     /**
@@ -77,7 +77,7 @@ public class VehiculoService {
         vehiculoDAO.actualizar(vehiculo);
         
         registrarAuditoria("UPDATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
-                          "Se actualizó vehículo con placa " + vehiculo.getPlaca());
+                          "Se actualizo vehículo con placa " + vehiculo.getPlaca());
     }
     
     /**
@@ -123,7 +123,7 @@ public class VehiculoService {
         
         Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
         if (vehiculo == null) {
-            throw new VehiculoNoDisponibleException("No existe vehículo con placa: " + placa);
+            throw new VehiculoNoDisponibleException("No existe vehiculo con placa: " + placa);
         }
         
         if (nuevoEstado == null) {
@@ -134,7 +134,7 @@ public class VehiculoService {
         vehiculoDAO.actualizar(vehiculo);
         
         registrarAuditoria("UPDATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
-                          "Se cambió el estado del vehículo " + placa + " a: " + nuevoEstado);
+                          "Se cambio el estado del vehiculo " + placa + " a: " + nuevoEstado);
     }
     
     /**
@@ -150,12 +150,12 @@ public class VehiculoService {
         // Buscar vehículo
         Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
         if (vehiculo == null) {
-            throw new VehiculoNoDisponibleException("No existe vehículo con placa: " + placa);
+            throw new VehiculoNoDisponibleException("No existe vehiculo con placa: " + placa);
         }
         
         // Validar que no esté en ruta
         if (vehiculo.getEstado() == EstadoVehiculo.EN_RUTA) {
-            throw new VehiculoNoDisponibleException("El vehículo está en ruta y no puede ir a mantenimiento");
+            throw new VehiculoNoDisponibleException("El vehiculo está en ruta y no puede ir a mantenimiento");
         }
         
         // Cambiar estado del vehículo
@@ -168,7 +168,7 @@ public class VehiculoService {
         
         // Registrar auditoría
         registrarAuditoria("UPDATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
-                          "Se programó mantenimiento para vehículo " + placa);
+                          "Se programo mantenimiento para vehiculo " + placa);
     }
     
     /**
@@ -178,19 +178,19 @@ public class VehiculoService {
      */
     private void validarVehiculo(Vehiculo vehiculo) throws DataBaseException {
         if (vehiculo.getPlaca() == null || vehiculo.getPlaca().trim().isEmpty()) {
-            throw new DataBaseException("La placa del vehículo es obligatoria");
+            throw new DataBaseException("La placa del vehiculo es obligatoria");
         }
         
         if (vehiculo.getMarca() == null || vehiculo.getMarca().trim().isEmpty()) {
-            throw new DataBaseException("La marca del vehículo es obligatoria");
+            throw new DataBaseException("La marca del vehiculo es obligatoria");
         }
         
         if (vehiculo.getModelo() == null || vehiculo.getModelo().trim().isEmpty()) {
-            throw new DataBaseException("El modelo del vehículo es obligatorio");
+            throw new DataBaseException("El modelo del vehiculo es obligatorio");
         }
         
         if (vehiculo.getYear() < 1900 || vehiculo.getYear() > LocalDateTime.now().getYear()) {
-            throw new DataBaseException("El año del vehículo no es válido");
+            throw new DataBaseException("El año del vehiculo no es válido");
         }
         
         if (vehiculo.getCapacidadCarga() <= 0) {

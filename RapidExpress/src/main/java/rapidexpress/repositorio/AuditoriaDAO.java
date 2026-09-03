@@ -22,7 +22,7 @@ public class AuditoriaDAO implements IAuditoriaDAO {
         try {
             this.dbConnection = DBConnection.getInstance();
         } catch (DataBaseException e) {
-            System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
+            System.err.println("Error al conectar con la base de datos: " + e.getMessage());
             throw new RuntimeException("No se pudo inicializar AuditoriaDAO", e);
         }
     }

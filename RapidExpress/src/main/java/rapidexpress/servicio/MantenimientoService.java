@@ -44,7 +44,7 @@ public class MantenimientoService {
         mantenimientoDAO.guardar(mantenimiento);
         
         registrarAuditoria("CREATE", "MANTENIMIENTO", String.valueOf(mantenimiento.getId()), 
-                          "Se registró mantenimiento para vehículo " + 
+                          "Se registro mantenimiento para vehiculo " + 
                           mantenimiento.getVehiculo().getPlaca());
     }
     

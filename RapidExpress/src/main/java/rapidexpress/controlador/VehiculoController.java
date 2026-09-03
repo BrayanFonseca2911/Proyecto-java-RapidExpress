@@ -48,7 +48,7 @@ public class VehiculoController {
                     break;
                 case "6":
                     continuar = false;
-                    System.out.println(" Volviendo al Menú Principal...");
+                    System.out.println(" Volviendo al Menu Principal...");
                     break;
                 default:
                     System.out.println("Opcion Invalida. Intente otra vez. ");
@@ -65,7 +65,7 @@ public class VehiculoController {
             String marca = scanner.nextLine();
             System.out.print("Modelo: ");
             String modelo = scanner.nextLine();
-            System.out.print("Año: ");
+            System.out.print("Ano: ");
             int year = Integer.parseInt(scanner.nextLine());
             System.out.println("Capacidad de Carga(kg): ");
             double capacidad = Double.parseDouble(scanner.nextLine());
@@ -86,7 +86,7 @@ public class VehiculoController {
             List<Vehiculo> vehiculos = servicio.listarTodos();
             vista.mostrarListaVehiculos(vehiculos);
         } catch (DataBaseException e) {
-            System.out.println("Error al listar vehículos: " + e.getMessage());
+            System.out.println("Error al listar vehiculos: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
         }
@@ -115,12 +115,12 @@ public class VehiculoController {
         try {
             Vehiculo vehiculo = servicio.buscarPorPlaca(placa);
             if (vehiculo == null) {
-                System.out.println("Vehículo no encontrado");
+                System.out.println("Vehiculo no encontrado");
                 return;
             }
 
             vista.mostrarVehiculo(vehiculo);
-            System.out.println("\n--- Nuevos datos (deje vacío para mantener los datos actuales) ---");
+            System.out.println("\n--- Nuevos datos (deje vacio para mantener los datos actuales) ---");
 
             System.out.print("Marca [" + vehiculo.getMarca() + "]: ");
             String marca = scanner.nextLine();
@@ -134,7 +134,7 @@ public class VehiculoController {
                 vehiculo.setModelo(modelo);
             }
 
-            System.out.print("Año [" + vehiculo.getYear() + "]: ");
+            System.out.print("Ano [" + vehiculo.getYear() + "]: ");
             String anioStr = scanner.nextLine();
             if (!anioStr.isEmpty()) {
                 vehiculo.setYear(Integer.parseInt(anioStr));
@@ -147,7 +147,7 @@ public class VehiculoController {
             }
 
             servicio.actualizarVehiculo(vehiculo);
-            System.out.println("Vehículo actualizado exitosamente");
+            System.out.println("Vehiculo actualizado exitosamente");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -160,7 +160,7 @@ public class VehiculoController {
         try {
             Vehiculo vehiculo = servicio.buscarPorPlaca(placa);
             if (vehiculo == null) {
-                System.out.println("Vehículo no encontrado");
+                System.out.println("Vehiculo no encontrado");
                 return;
             }
 

@@ -15,7 +15,7 @@ public class PaqueteNotFoundException extends Exception {
      * @param trackingId ID de tracking del paquete no encontrado
      */
     public PaqueteNotFoundException(String trackingId) {
-        super("No se encontró ningún paquete con el tracking ID: '" + trackingId + "'. " +
+        super("No se encontro ningun paquete con el tracking ID: '" + trackingId + "'. " +
               "Verifique que el ID sea correcto.");
         this.trackingId = trackingId;
     }

@@ -62,7 +62,7 @@ public class PaqueteService {
         
         // Registrar auditoría
         registrarAuditoria("CREATE", "PAQUETE", paquete.getTrackingId(), 
-                          "Se registró paquete con tracking ID: " + paquete.getTrackingId());
+                          "Se registro paquete con tracking ID: " + paquete.getTrackingId());
     }
     
     /**
@@ -138,7 +138,7 @@ public class PaqueteService {
         
         // Registrar auditoría
         registrarAuditoria("UPDATE", "PAQUETE", trackingId, 
-                          "Se actualizó estado del paquete a: " + nuevoEstado);
+                          "Se actualizo estado del paquete a: " + nuevoEstado);
     }
     
     /**
@@ -146,7 +146,7 @@ public class PaqueteService {
      */
     private void validarPaquete(Paquete paquete) throws DataBaseException {
         if (paquete.getDescripcion() == null || paquete.getDescripcion().trim().isEmpty()) {
-            throw new DataBaseException("La descripción del paquete es obligatoria");
+            throw new DataBaseException("La descripcion del paquete es obligatoria");
         }
         
         if (paquete.getPeso() <= 0) {
@@ -154,11 +154,11 @@ public class PaqueteService {
         }
         
         if (paquete.getOrigen() == null || paquete.getOrigen().trim().isEmpty()) {
-            throw new DataBaseException("La dirección de origen es obligatoria");
+            throw new DataBaseException("La direccion de origen es obligatoria");
         }
         
         if (paquete.getDestino() == null || paquete.getDestino().trim().isEmpty()) {
-            throw new DataBaseException("La dirección de destino es obligatoria");
+            throw new DataBaseException("La direccion de destino es obligatoria");
         }
         
         if (paquete.getRemitente() == null) {

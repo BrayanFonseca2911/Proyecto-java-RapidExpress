@@ -35,9 +35,9 @@ public class Config {
             FileInputStream fis = new FileInputStream(CONFIG_FILE);
             properties.load(fis);
             fis.close();
-            System.out.println("✅ Configuración cargada desde " + CONFIG_FILE);
+            System.out.println("Configuración cargada desde " + CONFIG_FILE);
         } catch (IOException e) {
-            System.out.println("⚠️ No se encontró " + CONFIG_FILE + ", usando valores por defecto");
+            System.out.println("No se encontró " + CONFIG_FILE + ", usando valores por defecto");
             // Establecer valores por defecto
             properties.setProperty("db.url", DEFAULT_URL);
             properties.setProperty("db.user", DEFAULT_USER);
@@ -101,12 +101,12 @@ public class Config {
      * Muestra la configuración actual (útil para debugging)
      */
     public static void mostrarConfiguracion() {
-        System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║      CONFIGURACIÓN DE BASE DE DATOS    ║");
-        System.out.println("╚════════════════════════════════════════╝");
+        System.out.println("+========================================+");
+        System.out.println("|      CONFIGURACION DE BASE DE DATOS    |");
+        System.out.println("+========================================+");
         System.out.println("URL: " + getDbUrl());
         System.out.println("Usuario: " + getDbUser());
-        System.out.println("Password: " + (getDbPassword().isEmpty() ? "(vacío)" : "****"));
+        System.out.println("Password: " + (getDbPassword().isEmpty() ? "(vacio)" : "****"));
         System.out.println("Driver: " + getDbDriver());
     }
 }

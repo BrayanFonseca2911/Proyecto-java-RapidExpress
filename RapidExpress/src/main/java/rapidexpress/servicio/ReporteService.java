@@ -75,7 +75,7 @@ public class ReporteService {
         // Buscar vehículo por placa
         Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
         if (vehiculo == null) {
-            throw new DataBaseException("No existe vehículo con placa: " + placa);
+            throw new DataBaseException("No existe vehiculo con placa: " + placa);
         }
 
         // Obtener rutas completadas del vehículo

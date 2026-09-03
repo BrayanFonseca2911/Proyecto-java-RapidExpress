@@ -51,7 +51,7 @@ public class ConductorService {
         // Validar que el número de identificación no exista
         Conductor existente = conductorDAO.buscarPorNumeroIdentificacion(conductor.getNumeroIdentificacion());
         if (existente != null) {
-            throw new ConductorNoDisponibleException("Ya existe un conductor con identificación: " + 
+            throw new ConductorNoDisponibleException("Ya existe un conductor con identificacion: " + 
                                                      conductor.getNumeroIdentificacion());
         }
         
@@ -63,7 +63,7 @@ public class ConductorService {
         
         // Registrar auditoría
         registrarAuditoria("CREATE", "CONDUCTOR", String.valueOf(conductor.getId()), 
-                          "Se registró conductor: " + conductor.getNombre());
+                          "Se registro conductor: " + conductor.getNombre());
     }
     
     /**
@@ -76,7 +76,7 @@ public class ConductorService {
         conductorDAO.actualizar(conductor);
         
         registrarAuditoria("UPDATE", "CONDUCTOR", String.valueOf(conductor.getId()), 
-                          "Se actualizó conductor: " + conductor.getNombre());
+                          "Se actualizo conductor: " + conductor.getNombre());
     }
     
     /**
@@ -121,28 +121,28 @@ public class ConductorService {
         // Buscar conductor
         Conductor conductor = conductorDAO.buscarPorNumeroIdentificacion(numeroIdentificacion);
         if (conductor == null) {
-            throw new ConductorNoDisponibleException("No existe conductor con identificación: " + numeroIdentificacion);
+            throw new ConductorNoDisponibleException("No existe conductor con identificacion: " + numeroIdentificacion);
         }
         
         // Validar que el conductor esté activo
         if (conductor.getEstado() != EstadoConductor.ACTIVO) {
-            throw new ConductorNoDisponibleException("El conductor no está activo");
+            throw new ConductorNoDisponibleException("El conductor no esta activo");
         }
         
         // Validar que no tenga vehículo asignado
         if (conductor.getVehiculoAsignado() != null) {
-            throw new ConductorNoDisponibleException("El conductor ya tiene un vehículo asignado");
+            throw new ConductorNoDisponibleException("El conductor ya tiene un vehiculo asignado");
         }
         
         // Buscar vehículo
         Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
         if (vehiculo == null) {
-            throw new VehiculoNoDisponibleException("No existe vehículo con placa: " + placa);
+            throw new VehiculoNoDisponibleException("No existe vehiculo con placa: " + placa);
         }
         
         // Validar que el vehículo esté disponible
         if (vehiculo.getEstado() != EstadoVehiculo.DISPONIBLE) {
-            throw new VehiculoNoDisponibleException("El vehículo no está disponible");
+            throw new VehiculoNoDisponibleException("El vehiculo no está disponible");
         }
         
         // Asignar vehículo al conductor
@@ -155,7 +155,7 @@ public class ConductorService {
         
         // Registrar auditoría
         registrarAuditoria("UPDATE", "CONDUCTOR", String.valueOf(conductor.getId()), 
-                          "Se asignó vehículo " + placa + " al conductor " + numeroIdentificacion);
+                          "Se asigno vehiculo " + placa + " al conductor " + numeroIdentificacion);
     }
     
     /**
@@ -170,12 +170,12 @@ public class ConductorService {
         // Buscar conductor
         Conductor conductor = conductorDAO.buscarPorNumeroIdentificacion(numeroIdentificacion);
         if (conductor == null) {
-            throw new ConductorNoDisponibleException("No existe conductor con identificación: " + numeroIdentificacion);
+            throw new ConductorNoDisponibleException("No existe conductor con identificacion: " + numeroIdentificacion);
         }
         
         // Validar que tenga vehículo asignado
         if (conductor.getVehiculoAsignado() == null) {
-            throw new ConductorNoDisponibleException("El conductor no tiene vehículo asignado");
+            throw new ConductorNoDisponibleException("El conductor no tiene vehiculo asignado");
         }
         
         // Liberar vehículo
@@ -184,7 +184,7 @@ public class ConductorService {
         
         // Registrar auditoría
         registrarAuditoria("UPDATE", "CONDUCTOR", String.valueOf(conductor.getId()), 
-                          "Se liberó vehículo del conductor " + numeroIdentificacion);
+                          "Se libero vehiculo del conductor " + numeroIdentificacion);
     }
     
     /**
@@ -192,7 +192,7 @@ public class ConductorService {
      */
     private void validarConductor(Conductor conductor) throws DataBaseException {
         if (conductor.getNumeroIdentificacion() == null || conductor.getNumeroIdentificacion().trim().isEmpty()) {
-            throw new DataBaseException("El número de identificación es obligatorio");
+            throw new DataBaseException("El numero de identificacion es obligatorio");
         }
         
         if (conductor.getNombre() == null || conductor.getNombre().trim().isEmpty()) {

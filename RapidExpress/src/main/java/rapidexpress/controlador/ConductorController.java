@@ -47,7 +47,7 @@ public class ConductorController {
                     break;
                 case "6":
                     continuar = false;
-                    System.out.println("\n Volviendo al Menú Principal...");
+                    System.out.println("\n Volviendo al Menu Principal...");
                     break;
                 default:
                     System.out.println("Opcion Incorrecta");
@@ -58,7 +58,7 @@ public class ConductorController {
     private void registrarConductor() {
         System.out.println("\n ====== REGISTRAR CONDUCTOR ======");
         try {
-            System.out.print("Numero de indentificación: ");
+            System.out.print("Numero de indentificacion: ");
             String numeroId = scanner.nextLine();
             System.out.print("Nombre Completo: ");
             String nombre = scanner.nextLine();

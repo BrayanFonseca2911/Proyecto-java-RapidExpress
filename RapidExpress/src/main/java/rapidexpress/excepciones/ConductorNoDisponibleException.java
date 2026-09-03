@@ -15,8 +15,8 @@ public class ConductorNoDisponibleException extends Exception {
      * @param numeroIdentificacion Número de identificación del conductor
      */
     public ConductorNoDisponibleException(String numeroIdentificacion) {
-        super("El conductor con identificación '" + numeroIdentificacion + 
-              "' no está disponible. Verifique que esté ACTIVO y sin vehículo asignado.");
+        super("El conductor con identificacion '" + numeroIdentificacion + 
+              "' no esta disponible. Verifique que este ACTIVO y sin vehiculo asignado.");
         this.numeroIdentificacion = numeroIdentificacion;
     }
     

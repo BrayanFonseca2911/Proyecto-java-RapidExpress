@@ -59,9 +59,9 @@ private String formatearFecha(Date fecha): String - formato YYYY-MM-DD HH:mm:ss*
         try (PrintWriter writer = new PrintWriter(new FileWriter(ARCHIVO_AUDITORIA, true))){
             String linea = formatearLinea(auditoria);
             writer.println(linea);
-            System.out.println("Auditoría Registrada: "+auditoria.getAccion());
+            System.out.println("Auditoria Registrada: "+auditoria.getAccion());
         } catch (IOException e) {
-            System.out.println("Error al escribir el archivo de audioría: "+e.getMessage());
+            System.out.println("Error al escribir el archivo de audioria: "+e.getMessage());
             e.printStackTrace();
         }
     }
@@ -130,9 +130,9 @@ private String formatearFecha(Date fecha): String - formato YYYY-MM-DD HH:mm:ss*
     public void limpiarArchivo() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(ARCHIVO_AUDITORIA, false))) {
             writer.write("");
-            System.out.println("✓ Archivo de auditoría limpiado");
+            System.out.println("✓ Archivo de auditoria limpiado");
         } catch (IOException e) {
-            System.err.println("❌ Error al limpiar archivo de auditoría: " + e.getMessage());
+            System.err.println(" Error al limpiar archivo de auditoria: " + e.getMessage());
         }
     }
     

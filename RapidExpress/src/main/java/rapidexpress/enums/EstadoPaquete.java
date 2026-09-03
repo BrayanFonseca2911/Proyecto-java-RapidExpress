@@ -11,7 +11,7 @@ package rapidexpress.enums;
 public enum EstadoPaquete {
     EN_BODEGA("En Bodega"),
     ASIGNADO_A_RUTA("Asignado a Ruta"),
-    EN_TRANSITO("En Tránsito"),
+    EN_TRANSITO("En Transito"),
     ENTREGADO("Entregado"),
     DEVUELTO("Devuelto");
     

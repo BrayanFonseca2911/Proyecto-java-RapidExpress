@@ -13,14 +13,14 @@ public class PaqueteView {
 
     public void mostrarMenuPaquetes() {
         ConsoleUtil.limpiarPantalla();
-        ConsoleUtil.imprimirTitulo("GESTIÓN DE PAQUETES");
+        ConsoleUtil.imprimirTitulo("GESTION DE PAQUETES");
         System.out.println("\n   1. Registrar nuevo paquete");
         System.out.println("   2. Consultar paquete por tracking");
         System.out.println("   3. Listar paquetes en bodega");
         System.out.println("   4. Actualizar estado de paquete");
-        System.out.println("   5. Volver al menú principal");
+        System.out.println("   5. Volver al menu principal");
         ConsoleUtil.imprimirSeparador();
-        System.out.print("\n   Seleccione una opción: ");
+        System.out.print("\n   Seleccione una opcion: ");
     }
 
     public void mostrarPaquete(Paquete paquete) {
@@ -30,7 +30,7 @@ public class PaqueteView {
         }
         ConsoleUtil.imprimirTitulo("Detalles del Paquete");
         System.out.println("   Tracking ID:   " + paquete.getTrackingId());
-        System.out.println("   Descripción:   " + paquete.getDescripcion());
+        System.out.println("   Descripcion:   " + paquete.getDescripcion());
         System.out.println("   Peso:          " + paquete.getPeso() + " kg");
         System.out.println("   Dimensiones:   " + paquete.getDimensiones());
         System.out.println("   Origen:        " + paquete.getOrigen());
@@ -40,15 +40,15 @@ public class PaqueteView {
         if (paquete.getRemitente() != null) {
             System.out.println("\n   --- Remitente ---");
             System.out.println("   Nombre:        " + paquete.getRemitente().getNombre());
-            System.out.println("   Dirección:     " + paquete.getRemitente().getDireccion());
-            System.out.println("   Teléfono:      " + paquete.getRemitente().getTelefono());
+            System.out.println("   Direccion:     " + paquete.getRemitente().getDireccion());
+            System.out.println("   Telefono:      " + paquete.getRemitente().getTelefono());
         }
 
         if (paquete.getDestinatario() != null) {
             System.out.println("\n   --- Destinatario ---");
             System.out.println("   Nombre:        " + paquete.getDestinatario().getNombre());
-            System.out.println("   Dirección:     " + paquete.getDestinatario().getDireccion());
-            System.out.println("   Teléfono:      " + paquete.getDestinatario().getTelefono());
+            System.out.println("   Direccion:     " + paquete.getDestinatario().getDireccion());
+            System.out.println("   Telefono:      " + paquete.getDestinatario().getTelefono());
         }
 
         ConsoleUtil.imprimirSeparador();
@@ -66,7 +66,7 @@ public class PaqueteView {
 
         ConsoleUtil.imprimirTitulo("Lista de Paquetes");
         System.out.printf("   %-15s | %-25s | %-8s | %-20s | %-15s%n",
-            "Tracking", "Descripción", "Peso", "Destino", "Estado");
+            "Tracking", "Descripcion", "Peso", "Destino", "Estado");
         ConsoleUtil.imprimirSeparador();
 
         paquetes.forEach(p -> {

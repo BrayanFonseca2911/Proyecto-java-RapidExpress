@@ -16,7 +16,7 @@ public class RutaInvalidaException extends Exception {
      * @param razon Razón por la cual la ruta es inválida
      */
     public RutaInvalidaException(Integer rutaId, String razon) {
-        super("La ruta con ID " + rutaId + " es inválida: " + razon);
+        super("La ruta con ID " + rutaId + " es invalida: " + razon);
         this.rutaId = rutaId;
     }
     

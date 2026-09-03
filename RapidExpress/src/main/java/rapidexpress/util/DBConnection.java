@@ -50,8 +50,8 @@ public class DBConnection {
             // Establecer la conexión
             this.connection = DriverManager.getConnection(url, user, password);
             
-            System.out.println("✅ Conexión a base de datos establecida correctamente");
-            System.out.println("📊 URL: " + url);
+            System.out.println(" Conexion a base de datos establecida correctamente");
+            System.out.println(" URL: " + url);
             
         } catch (ClassNotFoundException e) {
             throw new DataBaseException("Driver MySQL no encontrado: " + e.getMessage(), e);
@@ -89,12 +89,12 @@ public class DBConnection {
         try {
             // Verificar si la conexión está cerrada o nula
             if (connection == null || connection.isClosed()) {
-                System.out.println("⚠️ Conexión cerrada, reconectando...");
+                System.out.println("Conexión cerrada, reconectando...");
                 connection = DriverManager.getConnection(url, user, password);
             }
             return connection;
         } catch (SQLException e) {
-            throw new DataBaseException("Error al obtener la conexión: " + e.getMessage(), e);
+            throw new DataBaseException("Error al obtener la conexion: " + e.getMessage(), e);
         }
     }
     
@@ -106,10 +106,10 @@ public class DBConnection {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                System.out.println("🔒 Conexión a base de datos cerrada");
+                System.out.println("Conexión a base de datos cerrada");
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error al cerrar la conexión: " + e.getMessage());
+            System.err.println("Error al cerrar la conexión: " + e.getMessage());
         }
     }
     

@@ -28,7 +28,7 @@ public enum EstadoRuta {
     //Convierte un String a EstadoRuta
     public static EstadoRuta fronString(String texto){
         if(texto == null || texto.trim().isEmpty()){
-            throw new IllegalArgumentException("El texto no puede estar vacío ");
+            throw new IllegalArgumentException("El texto no puede estar vacio ");
         }
         
         String textoLimpio = texto.trim().toUpperCase().replace(" ", "_");
@@ -38,7 +38,7 @@ public enum EstadoRuta {
                 return estado;
             }
         }
-        throw new IllegalArgumentException("Estado de ruta no válido: "+texto);
+        throw new IllegalArgumentException("Estado de ruta no valido: "+texto);
     }
     
     //Verifica si la ruta puede cambiar al estado destino

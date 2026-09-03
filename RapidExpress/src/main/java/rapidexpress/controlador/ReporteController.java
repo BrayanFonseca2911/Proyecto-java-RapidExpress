@@ -44,7 +44,7 @@ public class ReporteController {
                     break;
                 case "5":
                     continuar = false;
-                    System.out.println("Volviendo al Menú Principal...");
+                    System.out.println("Volviendo al Menu Principal...");
                     break;
                 default:
                     System.out.println(" Opcion Invalida");
@@ -68,7 +68,7 @@ public class ReporteController {
 
     private void reporteHistorialVehiculo() {
         System.out.println("\n ====== REPORTE HISTORIAL DEL VEHICULO ======");
-        System.out.println("\nPlaca del vehículo: ");
+        System.out.println("\nPlaca del vehiculo: ");
         String placa = scanner.nextLine();
         try {
             List<String> historial = servicio.getHistorialRutasVehiculo(placa);

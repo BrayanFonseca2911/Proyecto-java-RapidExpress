@@ -49,7 +49,7 @@ public class PaqueteController {
                     System.out.println("Volviendo al Menu Principal...");
                     break;
                 default:
-                    System.out.println("Opcion Inválida");
+                    System.out.println("Opcion Invalida");
             }
         }
     }
@@ -128,10 +128,10 @@ public class PaqueteController {
         System.out.println("\nSeleccione el nuevo estado:");
         System.out.println("1. En Bodega");
         System.out.println("2. Asignado a Ruta");
-        System.out.println("3. En Tránsito");
+        System.out.println("3. En Transito");
         System.out.println("4. Entregado");
         System.out.println("5. Devuelto");
-        System.out.print("Opción: ");
+        System.out.print("Opcion: ");
         int opcion = Integer.parseInt(scanner.nextLine());
 
         EstadoPaquete estado;
@@ -152,7 +152,7 @@ public class PaqueteController {
                 estado = EstadoPaquete.DEVUELTO;
                 break;
             default:
-                System.out.println("Opción inválida");
+                System.out.println("Opcion invalida");
                 return;
         }
 

@@ -13,27 +13,27 @@ public class VehiculoView {
 
     public void mostrarMenuVehiculos() {
         ConsoleUtil.limpiarPantalla();
-        ConsoleUtil.imprimirTitulo("GESTIÓN DE VEHÍCULOS");
-        System.out.println("\n   1. Registrar nuevo vehículo");
-        System.out.println("   2. Listar todos los vehículos");
-        System.out.println("   3. Buscar vehículo por placa");
-        System.out.println("   4. Actualizar vehículo");
+        ConsoleUtil.imprimirTitulo("GESTION DE VEHICULOS");
+        System.out.println("\n   1. Registrar nuevo vehiculo");
+        System.out.println("   2. Listar todos los vehiculos");
+        System.out.println("   3. Buscar vehiculo por placa");
+        System.out.println("   4. Actualizar vehiculo");
         System.out.println("   5. Programar mantenimiento");
-        System.out.println("   6. Volver al menú principal");
+        System.out.println("   6. Volver al menu principal");
         ConsoleUtil.imprimirSeparador();
-        System.out.print("\n   Seleccione una opción: ");
+        System.out.print("\n   Seleccione una opcion: ");
     }
 
     public void mostrarVehiculo(Vehiculo vehiculo) {
         if (vehiculo == null) {
-            ConsoleUtil.imprimirError("Vehículo no encontrado");
+            ConsoleUtil.imprimirError("Vehiculo no encontrado");
             return;
         }
-        ConsoleUtil.imprimirTitulo("Detalles del Vehículo");
+        ConsoleUtil.imprimirTitulo("Detalles del Vehiculo");
         System.out.println("   Placa:       " + vehiculo.getPlaca());
         System.out.println("   Marca:       " + vehiculo.getMarca());
         System.out.println("   Modelo:      " + vehiculo.getModelo());
-        System.out.println("   Año:         " + vehiculo.getYear());
+        System.out.println("   Ano:         " + vehiculo.getYear());
         System.out.println("   Capacidad:   " + vehiculo.getCapacidadCarga() + " kg");
         System.out.println("   Estado:      " + vehiculo.getEstado().getDescripcion());
         ConsoleUtil.imprimirSeparador();
@@ -45,13 +45,13 @@ public class VehiculoView {
      */
     public void mostrarListaVehiculos(List<Vehiculo> vehiculos) {
         if (vehiculos == null || vehiculos.isEmpty()) {
-            ConsoleUtil.imprimirAdvertencia("No hay vehículos registrados");
+            ConsoleUtil.imprimirAdvertencia("No hay vehiculos registrados");
             return;
         }
 
-        ConsoleUtil.imprimirTitulo("Lista de Vehículos");
+        ConsoleUtil.imprimirTitulo("Lista de Vehiculos");
         System.out.printf("   %-10s | %-15s | %-15s | %-6s | %-10s | %-15s%n",
-            "Placa", "Marca", "Modelo", "Año", "Capacidad", "Estado");
+            "Placa", "Marca", "Modelo", "Ano", "Capacidad", "Estado");
         ConsoleUtil.imprimirSeparador();
 
         vehiculos.forEach(v -> System.out.printf("   %-10s | %-15s | %-15s | %-6d | %-10.2f | %-15s%n",
@@ -62,7 +62,7 @@ public class VehiculoView {
                 v.getCapacidadCarga(),
                 v.getEstado().getDescripcion()));
 
-        System.out.println("\n   Total: " + vehiculos.size() + " vehículo(s)");
+        System.out.println("\n   Total: " + vehiculos.size() + " vehiculo(s)");
         ConsoleUtil.pausar();
     }
 }

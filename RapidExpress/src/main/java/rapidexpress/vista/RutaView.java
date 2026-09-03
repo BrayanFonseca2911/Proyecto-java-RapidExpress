@@ -16,21 +16,21 @@ public class RutaView {
 
     public void mostrarMenuRutas() {
         ConsoleUtil.limpiarPantalla();
-        ConsoleUtil.imprimirTitulo("PLANIFICACIÓN DE RUTAS");
+        ConsoleUtil.imprimirTitulo("PLANIFICACION DE RUTAS");
         System.out.println("\n   1. Crear nueva ruta");
         System.out.println("   2. Iniciar ruta");
         System.out.println("   3. Monitorear rutas activas");
         System.out.println("   4. Actualizar estado de paquete en ruta");
         System.out.println("   5. Completar ruta");
-        System.out.println("   6. Volver al menú principal");
+        System.out.println("   6. Volver al menu principal");
         ConsoleUtil.imprimirSeparador();
-        System.out.print("\n   Seleccione una opción: ");
+        System.out.print("\n   Seleccione una opcion: ");
     }
 
     public void mostrarVehiculosDisponibles(List<Vehiculo> vehiculos) {
-        ConsoleUtil.imprimirTitulo("Vehículos Disponibles");
+        ConsoleUtil.imprimirTitulo("Vehiculos Disponibles");
         if (vehiculos == null || vehiculos.isEmpty()) {
-            ConsoleUtil.imprimirAdvertencia("No hay vehículos disponibles");
+            ConsoleUtil.imprimirAdvertencia("No hay vehiculos disponibles");
             return;
         }
         for (int i = 0; i < vehiculos.size(); i++) {
@@ -76,7 +76,7 @@ public class RutaView {
         System.out.println("   Peso Total:    " + ruta.getPesoTotal() + " kg");
 
         if (ruta.getVehiculo() != null) {
-            System.out.println("   Vehículo:      " + ruta.getVehiculo().getPlaca());
+            System.out.println("   Vehiculo:      " + ruta.getVehiculo().getPlaca());
         }
         if (ruta.getConductor() != null) {
             System.out.println("   Conductor:     " + ruta.getConductor().getNombre());
@@ -100,7 +100,7 @@ public class RutaView {
 
         ConsoleUtil.imprimirTitulo("Rutas Activas");
         System.out.printf("   %-5s | %-10s | %-25s | %-10s | %-15s%n",
-                "ID", "Vehículo", "Conductor", "Paquetes", "Peso Total");
+                "ID", "Vehiculo", "Conductor", "Paquetes", "Peso Total");
         ConsoleUtil.imprimirSeparador();
 
         for (Ruta r : rutas) {

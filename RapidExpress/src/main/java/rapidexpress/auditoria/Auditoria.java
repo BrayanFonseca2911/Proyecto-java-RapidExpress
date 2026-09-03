@@ -143,7 +143,7 @@ getFechaFormateada(): String - fecha en formato legible*/
     
     //Metodo para formatear el registro de auditoria para mostrar en consola
     public String toFormattedString(){
-        return String.format("[%s] Usuario: %s | Acción: %s | Tabla: %s | ID: %s | Detalle: %s | IP: %s",
+        return String.format("[%s] Usuario: %s | Accion: %s | Tabla: %s | ID: %s | Detalle: %s | IP: %s",
             getFechaFormateada(),
             usuario,
             accion,

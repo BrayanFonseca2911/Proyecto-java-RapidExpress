@@ -27,7 +27,7 @@ public enum EstadoConductor {
     //Convierte un String a EstadoConductor
     public static EstadoConductor fromString(String texto){
         if(texto == null || texto.trim().isEmpty()){
-            throw new IllegalArgumentException("El texto no puede estar vacío");
+            throw new IllegalArgumentException("El texto no puede estar vacio");
         }
         
         String textoLimpio = texto.trim().toUpperCase().replace(" ", "_");
@@ -37,7 +37,7 @@ public enum EstadoConductor {
                 return estado;
             }    
         }
-        throw new IllegalArgumentException("Estado de conductor no válido: "+texto);
+        throw new IllegalArgumentException("Estado de conductor no valido: "+texto);
     }
     
     //Verifica si el conductor puede ser asignado a un vehiculo

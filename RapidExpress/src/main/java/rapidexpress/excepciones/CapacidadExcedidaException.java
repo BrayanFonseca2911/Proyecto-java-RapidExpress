@@ -25,7 +25,7 @@ public class CapacidadExcedidaException extends Exception {
      * @param pesoIntentado Peso total que se intentó cargar en kg
      */
     public CapacidadExcedidaException(double capacidadMaxima, double pesoIntentado) {
-        super("La capacidad del vehículo ha sido excedida. " +
+        super("La capacidad del vehiculo ha sido excedida. " +
               "Máximo permitido: " + capacidadMaxima + " kg, " +
               "Peso intentado: " + pesoIntentado + " kg, " +
               "Exceso: " + (pesoIntentado - capacidadMaxima) + " kg");

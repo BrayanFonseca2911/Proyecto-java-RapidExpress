@@ -28,7 +28,7 @@ public enum EstadoVehiculo {
     
     public static EstadoVehiculo fromString(String texto){
         if(texto == null || texto.trim().isEmpty()){
-            throw new IllegalArgumentException("El texto no puede esatr vacío");
+            throw new IllegalArgumentException("El texto no puede esatr vacao");
         }
         
         String textoLimpio = texto.trim().toUpperCase().replace(" ", "_");

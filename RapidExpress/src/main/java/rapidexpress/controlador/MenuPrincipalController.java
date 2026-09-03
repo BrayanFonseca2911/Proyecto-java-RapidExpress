@@ -39,7 +39,7 @@ public class MenuPrincipalController {
 
         while (continuar) {
             vista.mostrarMenu();
-            System.out.println("\nSeleccione una opción: ");
+            System.out.println("\nSeleccione una opcion: ");
             String opcion = scanner.nextLine();
 
             switch (opcion) {
@@ -100,6 +100,6 @@ public class MenuPrincipalController {
     }
 
     public void salir() {
-        System.out.println("\n¡Hasta la proxima! Gracias por preferir RapidExpress. ");
+        System.out.println("\n!Hasta la proxima! Gracias por preferir RapidExpress. ");
     }
 }

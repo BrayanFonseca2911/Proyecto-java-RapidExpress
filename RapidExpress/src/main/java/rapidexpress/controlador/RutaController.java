@@ -48,7 +48,7 @@ public class RutaController {
                     break;
                 case "6":
                     continuar = false;
-                    System.out.println("Volviendo al Menú Principal...");
+                    System.out.println("Volviendo al Menu Principal...");
                     break;
                 default:
                     System.out.println("Opcion invalida");
@@ -59,7 +59,7 @@ public class RutaController {
     private void crearRuta() {
         System.out.println("\n ====== CREANDO UNA NUEVA RUTA ======");
         try {
-            System.out.println("ID del vehículo: ");
+            System.out.println("ID del vehiculo: ");
             int vehiculoId = Integer.parseInt(scanner.nextLine());
             System.out.println("ID del conductor: ");
             int conductorId = Integer.parseInt(scanner.nextLine());
@@ -90,7 +90,7 @@ public class RutaController {
         try {
             servicio.iniciarRuta(rutaId);
             System.out.println("Ruta " + rutaId + " Iniciada exitosamente");
-            System.out.println("El Vehiculo y el conductor ahora están EN RUTA");
+            System.out.println("El Vehiculo y el conductor ahora estan EN RUTA");
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
         }
@@ -114,9 +114,9 @@ public class RutaController {
         String trackingId = scanner.nextLine();
 
         System.out.println("\nNuevo estado del paquete:");
-        System.out.println("1. En Tránsito");
+        System.out.println("1. En Transito");
         System.out.println("2. Entregado");
-        System.out.print("Opción: ");
+        System.out.print("Opcion: ");
         int opcion = Integer.parseInt(scanner.nextLine());
 
         try {
