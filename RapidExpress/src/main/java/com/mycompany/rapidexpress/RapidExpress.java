@@ -35,7 +35,7 @@ public class RapidExpress {
 
         try {
             // Paso 1: Establecer conexión a la base de datos
-            System.out.println(" Conectando a la base de datos....");
+            System.out.println(" Conectando a la base de datos...");
             DBConnection dbConnection = DBConnection.getInstance();
 
             // Verificar que la conexión esté activa
