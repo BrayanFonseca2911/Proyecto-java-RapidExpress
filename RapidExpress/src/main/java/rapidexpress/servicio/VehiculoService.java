@@ -1,238 +1,208 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.servicio;
 
-// Importación para retornar colecciones de vehículos.
+import rapidexpress.dominio.Vehiculo;
+import rapidexpress.dominio.Mantenimiento;
+import rapidexpress.enums.EstadoVehiculo;
+import rapidexpress.excepciones.CapacidadExcedidaException;
+import rapidexpress.excepciones.DataBaseException;
+import rapidexpress.excepciones.VehiculoNoDisponibleException;
+import rapidexpress.repositorio.VehiculoDAO;
+import rapidexpress.repositorio.MantenimientoDAO;
+import rapidexpress.auditoria.Auditoria;
+import rapidexpress.auditoria.AuditLogger;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
-// Importación de los modelos de dominio involucrados.
-import rapidexpress.dominio.Mantenimiento;
-import rapidexpress.dominio.Vehiculo;
-// Importación de las excepciones personalizadas del sistema.
-import rapidexpress.excepciones.DataBaseException;
-// Importación de la capa de persistencia para acceso a datos.
-import rapidexpress.repositorio.MantenimientoDAO;
-import rapidexpress.repositorio.VehiculoDAO;
-
 /**
- * Propósito: Coordinar las reglas de negocio, validaciones y auditoría 
- * aplicables a la gestión de vehículos de la flota dentro del sistema RapidExpress.
+ * Servicio para la gestión de vehículos.
+ * Contiene la lógica de negocio y validaciones.
  * 
  * @author User
  */
 public class VehiculoService {
-
-    // Repositorio para operaciones CRUD de vehículos.
+    
     private final VehiculoDAO vehiculoDAO;
-    // Repositorio para registrar los mantenimientos de los vehículos.
     private final MantenimientoDAO mantenimientoDAO;
-    // Servicio para el registro de traza y auditoría de acciones.
-    private final AuditoriaService auditoriaService;
-
-    // Constructor que inicializa las dependencias de datos y servicios auxiliares.
+    private final AuditLogger auditLogger;
+    
+    /**
+     * Constructor del servicio
+     */
     public VehiculoService() {
-        // Instancia el DAO de vehículos.
         this.vehiculoDAO = new VehiculoDAO();
-        // Instancia el DAO de mantenimientos.
         this.mantenimientoDAO = new MantenimientoDAO();
-        // Instancia el servicio de auditoría.
-        this.auditoriaService = new AuditoriaService();
+        this.auditLogger = AuditLogger.getInstance();
     }
-
+    
     /**
-     * Registra un nuevo vehículo tras validar duplicidad de placa y coherencia de datos.
-     * 
-     * @param v Objeto vehículo a registrar.
-     * @return true si el proceso de guardado y auditoría fue exitoso.
-     * @throws DataBaseException Si ocurre una falla en el acceso a datos.
-     * @throws IllegalArgumentException Si la placa ya existe o los datos son inválidos.
+     * Registra un nuevo vehículo en el sistema
+     * @param vehiculo Vehículo a registrar
+     * @throws DataBaseException Si ocurre un error de base de datos
+     * @throws VehiculoNoDisponibleException Si la placa ya existe
      */
-    public boolean registrarVehiculo(Vehiculo v) throws DataBaseException {
-        // Valida que el objeto no sea nulo.
-        if (v == null) {
-            throw new IllegalArgumentException("El vehículo no puede ser nulo.");
+    public void registrarVehiculo(Vehiculo vehiculo) throws DataBaseException, VehiculoNoDisponibleException {
+        // Validar que la placa no exista
+        Vehiculo existente = vehiculoDAO.buscarPorPlaca(vehiculo.getPlaca());
+        if (existente != null) {
+            throw new VehiculoNoDisponibleException("Ya existe un vehículo con la placa: " + vehiculo.getPlaca());
         }
-        // Valida que la placa no sea vacía o nula.
-        if (v.getPlaca() == null || v.getPlaca().trim().isEmpty()) {
-            throw new IllegalArgumentException("La placa del vehículo es obligatoria.");
-        }
-        // Valida que no exista un vehículo registrado con la misma placa.
-        if (buscarPorPlaca(v.getPlaca()) != null) {
-            throw new IllegalArgumentException("Ya existe un vehículo registrado con la placa: " + v.getPlaca());
-        }
-        // Valida que la capacidad de carga (peso) sea un valor positivo.
-        if (v.getCapacidadKg() <= 0) {
-            throw new IllegalArgumentException("La capacidad de carga debe ser mayor a 0 kg.");
-        }
-        // Valida que el modelo/año sea un valor razonable.
-        if (v.getModelo() == null || v.getModelo().trim().isEmpty()) {
-            throw new IllegalArgumentException("El modelo o año del vehículo debe ser especificado.");
-        }
-
-        // Guarda el registro en la base de datos a través del DAO.
-        boolean guardado = vehiculoDAO.guardar(v);
-
-        // Si se guardó correctamente, registra la traza de auditoría.
-        if (guardado) {
-            auditoriaService.registrarAccion("CREATE", "VEHICULO", "Placa: " + v.getPlaca());
-        }
-
-        // Retorna el resultado de la operación.
-        return guardado;
+        
+        // Validar datos
+        validarVehiculo(vehiculo);
+        
+        // Guardar en base de datos
+        vehiculoDAO.guardar(vehiculo);
+        
+        // Registrar auditoría
+        registrarAuditoria("CREATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
+                          "Se registró vehículo con placa " + vehiculo.getPlaca());
     }
-
+    
     /**
-     * Actualiza los datos de un vehículo existente tras verificar su presencia en la BD.
-     * 
-     * @param v Vehiculo con la información modificada.
-     * @return true si se actualizó correctamente.
-     * @throws DataBaseException Si hay error en MySQL.
+     * Actualiza un vehículo existente
+     * @param vehiculo Vehículo con datos actualizados
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    public boolean actualizarVehiculo(Vehiculo v) throws DataBaseException {
-        // Valida la existencia del objeto y su ID.
-        if (v == null || v.getId() <= 0) {
-            throw new IllegalArgumentException("El vehículo a actualizar no es válido.");
-        }
-        // Verifica que el vehículo realmente exista previamente en la base de datos.
-        Vehiculo vehiculoExistente = vehiculoDAO.buscarPorId(v.getId());
-        if (vehiculoExistente == null) {
-            throw new IllegalArgumentException("No existe el vehículo especificado para actualizar.");
-        }
-
-        // Ejecuta la actualización de la entidad en la base de datos.
-        boolean actualizado = vehiculoDAO.actualizar(v);
-
-        // Si fue exitoso, envía la auditoría.
-        if (actualizado) {
-            auditoriaService.registrarAccion("UPDATE", "VEHICULO", "ID: " + v.getId());
-        }
-
-        // Retorna el resultado.
-        return actualizado;
+    public void actualizarVehiculo(Vehiculo vehiculo) throws DataBaseException {
+        validarVehiculo(vehiculo);
+        vehiculoDAO.actualizar(vehiculo);
+        
+        registrarAuditoria("UPDATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
+                          "Se actualizó vehículo con placa " + vehiculo.getPlaca());
     }
-
+    
     /**
-     * Elimina un vehículo mediante su número de placa tras validar reglas de negocio.
-     * 
-     * @param placa Placa única del vehículo.
-     * @return true si el borrado fue exitoso.
-     * @throws DataBaseException Si falla la eliminación en BD.
-     */
-    public boolean eliminarVehiculo(String placa) throws DataBaseException {
-        // Busca el vehículo en la base de datos a partir de su placa.
-        Vehiculo v = buscarPorPlaca(placa);
-        if (v == null) {
-            throw new IllegalArgumentException("No se encontró ningún vehículo con la placa: " + placa);
-        }
-
-        // (Aquí se podría invocar validación con RutaDAO/RutaService para verificar que no tenga rutas activas).
-
-        // Ejecuta la eliminación física en la base de datos mediante el ID recuperado.
-        boolean eliminado = vehiculoDAO.eliminar(v.getId());
-
-        // Si se eliminó correctamente, registra la traza de auditoría.
-        if (eliminado) {
-            auditoriaService.registrarAccion("DELETE", "VEHICULO", "Placa: " + placa);
-        }
-
-        // Retorna la confirmación de la eliminación.
-        return eliminado;
-    }
-
-    /**
-     * Busca un vehículo registrado utilizando su placa.
-     * 
-     * @param placa Placa del vehículo.
-     * @return El objeto Vehiculo encontrado o null.
-     * @throws DataBaseException Si ocurre un error en la consulta.
+     * Busca un vehículo por su placa
+     * @param placa Placa del vehículo
+     * @return Vehículo encontrado o null
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
     public Vehiculo buscarPorPlaca(String placa) throws DataBaseException {
-        // Valida que la placa ingresada contenga texto.
-        if (placa == null || placa.trim().isEmpty()) {
-            return null;
-        }
-        // Invoca el método especializado del DAO de vehículos.
         return vehiculoDAO.buscarPorPlaca(placa);
     }
-
+    
     /**
-     * Obtiene el listado completo de vehículos.
-     * 
-     * @return Lista de vehículos de la flota.
-     * @throws DataBaseException Si hay error al listar en la BD.
+     * Lista todos los vehículos
+     * @return Lista de vehículos
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
     public List<Vehiculo> listarTodos() throws DataBaseException {
-        // Retorna la colección completa provista por el DAO.
         return vehiculoDAO.listarTodos();
     }
-
+    
     /**
-     * Obtiene la lista de vehículos disponibles para ser asignados a rutas.
-     * 
-     * @return Lista de vehículos en estado disponible.
-     * @throws DataBaseException Si ocurre un fallo en la base de datos.
+     * Lista vehículos disponibles
+     * @return Lista de vehículos disponibles
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
     public List<Vehiculo> listarDisponibles() throws DataBaseException {
-        // Retorna los vehículos filtrados por disponibilidad desde el DAO.
         return vehiculoDAO.listarDisponibles();
     }
-
+    
     /**
-     * Registra una orden de mantenimiento para un vehículo y actualiza su estado operativo.
-     * 
-     * @param placa Placa del vehículo a intervenir.
-     * @param m Objeto Mantenimiento con la descripción y costos.
-     * @return true si la operación completó el registro de mantenimiento y cambio de estado.
-     * @throws DataBaseException Si ocurre un fallo en la persistencia.
+     * Lista vehículos por estado
+     * @param estado Estado a filtrar
+     * @return Lista de vehículos con el estado especificado
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    public boolean programarMantenimiento(String placa, Mantenimiento m) throws DataBaseException {
-        // Busca el vehículo objetivo por su placa.
-        Vehiculo v = buscarPorPlaca(placa);
-        if (v == null) {
-            throw new IllegalArgumentException("No existe el vehículo con placa: " + placa);
-        }
-        // Valida que el objeto de mantenimiento no sea nulo.
-        if (m == null) {
-            throw new IllegalArgumentException("Los datos de mantenimiento son obligatorios.");
-        }
-
-        // Modifica el estado del vehículo a 'EN_MANTENIMIENTO'.
-        v.setEstado("EN_MANTENIMIENTO");
-        // Actualiza el estado del vehículo en la BD.
-        vehiculoDAO.actualizar(v);
-
-        // Asigna el ID del vehículo al objeto mantenimiento.
-        m.setIdVehiculo(v.getId());
-
-        // Guarda el registro de mantenimiento en la base de datos.
-        boolean guardado = mantenimientoDAO.guardar(m);
-
-        // Si fue exitoso, audita el evento.
-        if (guardado) {
-            auditoriaService.registrarAccion("UPDATE", "VEHICULO_MANTENIMIENTO", "Placa: " + placa);
-        }
-
-        // Retorna la confirmación del guardado.
-        return guardado;
+    public List<Vehiculo> listarPorEstado(EstadoVehiculo estado) throws DataBaseException {
+        return vehiculoDAO.listarPorEstado(estado);
     }
-
-    /**
-     * Valida si un vehículo tiene capacidad de carga suficiente para un peso determinado.
-     * 
-     * @param placa Placa del vehículo.
-     * @param peso Peso a validar en kg.
-     * @return true si la capacidad de carga del vehículo es mayor o igual al peso.
-     * @throws DataBaseException Si ocurre un fallo de lectura en la BD.
-     */
-    public boolean validarCapacidad(String placa, double peso) throws DataBaseException {
-        // Busca el vehículo para validar sus especificaciones.
-        Vehiculo v = buscarPorPlaca(placa);
-        if (v == null) {
-            throw new IllegalArgumentException("Vehículo no encontrado.");
+    
+    public void cambiarEstado(String placa, EstadoVehiculo nuevoEstado) 
+            throws DataBaseException, VehiculoNoDisponibleException {
+        
+        Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
+        if (vehiculo == null) {
+            throw new VehiculoNoDisponibleException("No existe vehículo con placa: " + placa);
         }
-        // Compara si la capacidad de carga soportada es suficiente.
-        return v.getCapacidadKg() >= peso;
+        
+        if (nuevoEstado == null) {
+            throw new DataBaseException("El estado no puede ser nulo");
+        }
+        
+        vehiculo.setEstado(nuevoEstado);
+        vehiculoDAO.actualizar(vehiculo);
+        
+        registrarAuditoria("UPDATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
+                          "Se cambió el estado del vehículo " + placa + " a: " + nuevoEstado);
+    }
+    
+    /**
+     * Programa un mantenimiento para un vehículo
+     * @param placa Placa del vehículo
+     * @param mantenimiento Datos del mantenimiento
+     * @throws DataBaseException Si ocurre un error de base de datos
+     * @throws VehiculoNoDisponibleException Si el vehículo no existe
+     */
+    public void programarMantenimiento(String placa, Mantenimiento mantenimiento) 
+            throws DataBaseException, VehiculoNoDisponibleException {
+        
+        // Buscar vehículo
+        Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
+        if (vehiculo == null) {
+            throw new VehiculoNoDisponibleException("No existe vehículo con placa: " + placa);
+        }
+        
+        // Validar que no esté en ruta
+        if (vehiculo.getEstado() == EstadoVehiculo.EN_RUTA) {
+            throw new VehiculoNoDisponibleException("El vehículo está en ruta y no puede ir a mantenimiento");
+        }
+        
+        // Cambiar estado del vehículo
+        vehiculo.setEstado(EstadoVehiculo.EN_MANTENIMIENTO);
+        vehiculoDAO.actualizar(vehiculo);
+        
+        // Guardar mantenimiento
+        mantenimiento.setVehiculo(vehiculo);
+        mantenimientoDAO.guardar(mantenimiento);
+        
+        // Registrar auditoría
+        registrarAuditoria("UPDATE", "VEHICULO", String.valueOf(vehiculo.getId()), 
+                          "Se programó mantenimiento para vehículo " + placa);
+    }
+    
+    /**
+     * Valida que el vehículo tenga datos correctos
+     * @param vehiculo Vehículo a validar
+     * @throws DataBaseException Si los datos son inválidos
+     */
+    private void validarVehiculo(Vehiculo vehiculo) throws DataBaseException {
+        if (vehiculo.getPlaca() == null || vehiculo.getPlaca().trim().isEmpty()) {
+            throw new DataBaseException("La placa del vehículo es obligatoria");
+        }
+        
+        if (vehiculo.getMarca() == null || vehiculo.getMarca().trim().isEmpty()) {
+            throw new DataBaseException("La marca del vehículo es obligatoria");
+        }
+        
+        if (vehiculo.getModelo() == null || vehiculo.getModelo().trim().isEmpty()) {
+            throw new DataBaseException("El modelo del vehículo es obligatorio");
+        }
+        
+        if (vehiculo.getYear() < 1900 || vehiculo.getYear() > LocalDateTime.now().getYear()) {
+            throw new DataBaseException("El año del vehículo no es válido");
+        }
+        
+        if (vehiculo.getCapacidadCarga() <= 0) {
+            throw new DataBaseException("La capacidad de carga debe ser mayor a cero");
+        }
+    }
+    
+    /**
+     * Registra una acción en el sistema de auditoría
+     */
+    private void registrarAuditoria(String accion, String tabla, String registroId, String detalle) {
+        Auditoria auditoria = new Auditoria();
+        auditoria.setFecha(LocalDateTime.now());
+        auditoria.setUsuario("system");
+        auditoria.setAccion(accion);
+        auditoria.setTablaAfectada(tabla);
+        auditoria.setRegistroId(registroId);
+        auditoria.setDetalle(detalle);
+        auditoria.setIp("localhost");
+        
+        auditLogger.log(auditoria);
     }
 }

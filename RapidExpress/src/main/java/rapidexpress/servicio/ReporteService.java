@@ -1,158 +1,148 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.servicio;
 
-// Importaciones para el manejo de fechas en filtros de reportes.
-import java.util.Date;
-// Importaciones de colecciones Map, List y HashMap para estructura de reportes.
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-// Importación de stream collectors para el agrupamiento de datos.
-import java.util.stream.Collectors;
-
-// Importaciones de los enums y modelos del dominio.
-import rapidexpress.dominio.EstadoPaquete;
-import rapidexpress.dominio.EstadoVehiculo;
 import rapidexpress.dominio.Paquete;
 import rapidexpress.dominio.Ruta;
 import rapidexpress.dominio.Vehiculo;
-// Importación de la excepción de persistencia personalizada.
+import rapidexpress.enums.EstadoPaquete;
+import rapidexpress.enums.EstadoVehiculo;
 import rapidexpress.excepciones.DataBaseException;
-// Importaciones de los repositorios requeridos para las consultas analíticas.
 import rapidexpress.repositorio.PaqueteDAO;
 import rapidexpress.repositorio.RutaDAO;
 import rapidexpress.repositorio.VehiculoDAO;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Propósito: Proveer la lógica de negocio para la consolidación, agrupamiento 
- * y generación de reportes métricos y operativos del sistema RapidExpress.
+ * Servicio para la generación de reportes.
  * 
  * @author User
  */
 public class ReporteService {
-
-    // Repositorio para la consulta y conteo de datos de paquetes.
+    
     private final PaqueteDAO paqueteDAO;
-    // Repositorio para el historial de trayectos y rutas.
     private final RutaDAO rutaDAO;
-    // Repositorio para la consulta del parque automotor.
     private final VehiculoDAO vehiculoDAO;
-
-    // Constructor que inicializa los DAOs colaboradores.
+    
     public ReporteService() {
-        // Instancia el DAO de paquetes.
         this.paqueteDAO = new PaqueteDAO();
-        // Instancia el DAO de rutas.
         this.rutaDAO = new RutaDAO();
-        // Instancia el DAO de vehículos.
         this.vehiculoDAO = new VehiculoDAO();
     }
-
+    
     /**
-     * Consulta las entregas realizadas por un conductor en un rango de fechas y las agrupa por nombre.
-     * 
-     * @param conductorId Identificador único del conductor.
-     * @param inicio Fecha inicial del periodo.
-     * @param fin Fecha final del periodo.
-     * @return Mapa con la llave (Nombre del conductor) y el valor (Lista de tracking IDs entregados).
-     * @throws DataBaseException Si ocurre un fallo en la consulta SQL.
+     * Obtiene un resumen de paquetes por estado
+     * @return Mapa con estado y cantidad
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    public Map<String, List<String>> getEntregasPorConductor(Integer conductorId, Date inicio, Date fin) throws DataBaseException {
-        // Valida que el ID del conductor sea válido.
-        if (conductorId == null || conductorId <= 0) {
-            throw new IllegalArgumentException("El ID del conductor debe ser válido.");
-        }
-        // Valida que el rango de fechas no sea nulo.
-        if (inicio == null || fin == null) {
-            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
-        }
-
-        // Obtiene la lista de paquetes entregados mediante el DAO.
-        List<Paquete> paquetes = paqueteDAO.listarEntregasPorConductor(conductorId, inicio, fin);
-
-        // Agrupa los códigos de rastreo (trackingId) por el nombre del conductor.
-        return paquetes.stream().collect(
-            Collectors.groupingBy(
-                p -> p.getConductor() != null ? p.getConductor().getNombre() : "Conductor Desconocido",
-                Collectors.mapping(Paquete::getTrackingId, Collectors.toList())
-            )
-        );
-    }
-
-    /**
-     * Consulta el historial completo de rutas recorridas por un vehículo específico.
-     * 
-     * @param placa Placa del vehículo a consultar.
-     * @return Lista de rutas en las que participó el vehículo.
-     * @throws DataBaseException Si ocurre un fallo en el acceso a datos.
-     */
-    public List<Ruta> getHistorialRutasVehiculo(String placa) throws DataBaseException {
-        // Valida que la placa no esté vacía.
-        if (placa == null || placa.trim().isEmpty()) {
-            throw new IllegalArgumentException("La placa del vehículo es obligatoria.");
-        }
-
-        // Busca la entidad del vehículo por su placa.
-        Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
-        if (vehiculo == null) {
-            throw new IllegalArgumentException("No se encontró ningún vehículo con la placa: " + placa);
-        }
-
-        // Retorna la lista de rutas registradas para la ID del vehículo.
-        return rutaDAO.listarHistorialVehiculo(vehiculo.getId());
-    }
-
-    /**
-     * Genera un resumen estadístico con el conteo global de paquetes según su estado.
-     * 
-     * @return Mapa asociativo con cada EstadoPaquete y la cantidad total correspondiente.
-     * @throws DataBaseException Si ocurre un fallo en la consulta de base de datos.
-     */
-    public Map<EstadoPaquete, Integer> getResumenPaquetesPorEstado() throws DataBaseException {
-        // Inicializa el mapa que contendrá los totales por estado.
-        Map<EstadoPaquete, Integer> resumen = new HashMap<>();
-
-        // Recorre cada uno de los valores definidos en el Enum EstadoPaquete.
+    public Map<String, Integer> getResumenPaquetesPorEstado() throws DataBaseException {
+        Map<String, Integer> resumen = new HashMap<>();
+        
         for (EstadoPaquete estado : EstadoPaquete.values()) {
-            // Cuenta la cantidad de paquetes existentes para cada estado particular.
-            int cantidad = paqueteDAO.contarPorEstado(estado);
-            // Registra la pareja estado - cantidad en el mapa.
-            resumen.put(estado, cantidad);
+            List<Paquete> paquetes = paqueteDAO.listarPorEstado(estado);
+            resumen.put(estado.getDescripcion(), paquetes.size());
         }
-
-        // Retorna el resumen analítico generado.
+        
         return resumen;
     }
-
+    
     /**
-     * Obtiene el listado actualizado de los vehículos que se encuentran en mantenimiento.
-     * 
-     * @return Lista de vehículos con estado EN_MANTENIMIENTO.
-     * @throws DataBaseException Si ocurre un error en el repositorio de datos.
+     * Obtiene vehículos en mantenimiento
+     * @return Lista de vehículos en mantenimiento
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
     public List<Vehiculo> getVehiculosEnMantenimiento() throws DataBaseException {
-        // Ejecuta la consulta filtrando por el Enum EstadoVehiculo.EN_MANTENIMIENTO.
         return vehiculoDAO.listarPorEstado(EstadoVehiculo.EN_MANTENIMIENTO);
     }
-
+    
     /**
-     * Calcula la cantidad de entregas completadas por cada conductor dentro de un rango de fechas.
-     * 
-     * @param inicio Fecha de inicio del reporte.
-     * @param fin Fecha de fin del reporte.
-     * @return Mapa relacionando el nombre del conductor con su cantidad de entregas.
-     * @throws DataBaseException Si ocurre una falla en el acceso a datos.
+     * Obtiene historial de rutas de un vehículo por placa
+     * @param placa Placa del vehículo
+     * @return Lista de descripciones de rutas
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    public Map<String, Integer> getRendimientoConductores(Date inicio, Date fin) throws DataBaseException {
-        // Valida la obligatoriedad del rango de fechas.
-        if (inicio == null || fin == null) {
-            throw new IllegalArgumentException("El rango de fechas especificado no es válido.");
+    public List<String> getHistorialRutasVehiculo(String placa) throws DataBaseException {
+        List<String> historial = new ArrayList<>();
+        
+        // Buscar vehículo por placa
+        Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
+        if (vehiculo == null) {
+            throw new DataBaseException("No existe vehículo con placa: " + placa);
         }
-
-        // Invoca al DAO para obtener el mapa con el conteo de entregas por nombre de conductor.
-        return paqueteDAO.obtenerConteoEntregasPorConductor(inicio, fin);
+        
+        // Obtener rutas completadas del vehículo
+        List<Ruta> rutas = rutaDAO.listarHistorialVehiculo(vehiculo.getId());
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
+        for (Ruta ruta : rutas) {
+            String descripcion = String.format("Ruta #%d | %s | %d paquetes | %.2f kg",
+                ruta.getId(),
+                ruta.getFecha().format(formatter),
+                ruta.getPaquetes() != null ? ruta.getPaquetes().size() : 0,
+                ruta.getPesoTotal());
+            historial.add(descripcion);
+        }
+        
+        return historial;
+    }
+    
+    /**
+     * Obtiene entregas por conductor en un rango de fechas
+     * @param fechaInicioStr Fecha de inicio en formato dd/MM/yyyy
+     * @param fechaFinStr Fecha de fin en formato dd/MM/yyyy
+     * @return Mapa con nombre del conductor y lista de entregas
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public Map<String, List<String>> getEntregasPorConductor(String fechaInicioStr, String fechaFinStr) 
+            throws DataBaseException {
+        
+        Map<String, List<String>> entregas = new HashMap<>();
+        
+        try {
+            // Parsear fechas
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate fechaInicio = LocalDate.parse(fechaInicioStr.trim(), formatter);
+            LocalDate fechaFin = LocalDate.parse(fechaFinStr.trim(), formatter);
+            
+            LocalDateTime inicio = fechaInicio.atStartOfDay();
+            LocalDateTime fin = fechaFin.plusDays(1).atStartOfDay();
+            
+            // Obtener todas las rutas completadas en el rango
+            List<Ruta> todasRutas = rutaDAO.listarTodos();
+            
+            for (Ruta ruta : todasRutas) {
+                // Filtrar por fecha y estado
+                if (ruta.getFecha().isAfter(inicio) && 
+                    ruta.getFecha().isBefore(fin) &&
+                    ruta.getEstado().toString().equals("COMPLETADA")) {
+                    
+                    String conductorNombre = ruta.getConductor() != null 
+                        ? ruta.getConductor().getNombre() 
+                        : "Desconocido";
+                    
+                    // Crear lista si no existe
+                    entregas.putIfAbsent(conductorNombre, new ArrayList<>());
+                    
+                    // Agregar descripción de la entrega
+                    String entregaDesc = String.format("Ruta #%d | %s | %d paquetes",
+                        ruta.getId(),
+                        ruta.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                        ruta.getPaquetes() != null ? ruta.getPaquetes().size() : 0);
+                    
+                    entregas.get(conductorNombre).add(entregaDesc);
+                }
+            }
+            
+        } catch (Exception e) {
+            throw new DataBaseException("Error al procesar fechas: " + e.getMessage(), e);
+        }
+        
+        return entregas;
     }
 }
