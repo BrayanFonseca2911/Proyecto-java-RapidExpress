@@ -1,0 +1,383 @@
+<title>RapidExpress Schema</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --paper:#eef1f4;
+    --surface:#ffffff;
+    --ink:#1b2a3d;
+    --ink-soft:#4c5c70;
+    --line:#c6cfd9;
+    --line-strong:#8fa0b3;
+    --accent:#d9611f;
+    --accent-ink:#7a3610;
+    --accent-soft:#f7e2d1;
+    --ok:#2f7a4f;
+    --shadow: 0 1px 0 rgba(27,42,61,0.04);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#12181f;
+      --surface:#1a222c;
+      --ink:#e8edf2;
+      --ink-soft:#a9b7c6;
+      --line:#2c3844;
+      --line-strong:#3d4c5c;
+      --accent:#f0824a;
+      --accent-ink:#ffd9bd;
+      --accent-soft:#3a2417;
+      --ok:#6fbf8f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181f;
+    --surface:#1a222c;
+    --ink:#e8edf2;
+    --ink-soft:#a9b7c6;
+    --line:#2c3844;
+    --line-strong:#3d4c5c;
+    --accent:#f0824a;
+    --accent-ink:#ffd9bd;
+    --accent-soft:#3a2417;
+    --ok:#6fbf8f;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    padding: clamp(20px, 4vw, 56px);
+    display:flex;
+    justify-content:center;
+  }
+
+  .sheet{
+    width:100%;
+    max-width:980px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+
+  /* ---- waybill header ---- */
+  header{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    padding: 22px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:6px;
+    background:repeating-linear-gradient(
+      -45deg,
+      var(--accent) 0 6px,
+      transparent 6px 12px
+    );
+  }
+  .waybill-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:8px 24px;
+    padding-left:14px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-ink);
+    background:var(--accent-soft);
+    padding:3px 8px;
+    border-radius:3px;
+  }
+  h1{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    font-size:clamp(2.1rem, 5vw, 3.1rem);
+    letter-spacing:0.01em;
+    text-transform:uppercase;
+    margin:6px 0 4px;
+    text-wrap:balance;
+    padding-left:14px;
+  }
+  .subtitle{
+    padding-left:14px;
+    color:var(--ink-soft);
+    font-size:0.98rem;
+    max-width:62ch;
+    line-height:1.5;
+  }
+  .meta{
+    padding-left:14px;
+    margin-top:14px;
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+  }
+  .meta b{ color:var(--ink); font-weight:500; }
+
+  /* ---- diagram sheet: stays paper-toned like a printed page ---- */
+  .diagram-panel{
+    background:#ffffff;
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    padding:8px;
+  }
+  .diagram-panel .panel-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#7a8ba0;
+    padding:10px 14px 0;
+  }
+  .diagram-scroll{
+    overflow-x:auto;
+    padding: 4px 10px 18px;
+  }
+  pre.mermaid{
+    margin:0;
+    min-width:760px;
+  }
+
+  /* ---- legend ---- */
+  .legend{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    padding:20px 24px;
+  }
+  .legend h2{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+    font-weight:500;
+  }
+  .legend-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:14px 28px;
+  }
+  .legend-item{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:0.9rem;
+    color:var(--ink-soft);
+    line-height:1.45;
+  }
+  .legend-item code{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:1px 6px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+
+  /* ---- export note ---- */
+  .export-note{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    background:var(--accent-soft);
+    border:1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+    border-radius:4px;
+    padding:16px 20px;
+    font-size:0.92rem;
+    color:var(--ink);
+    line-height:1.55;
+  }
+  .export-note .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--accent-ink);
+    flex-shrink:0;
+    margin-top:2px;
+  }
+  .export-note code{
+    font-family:'IBM Plex Mono', monospace;
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:1px 6px;
+    border-radius:3px;
+  }
+
+  footer{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.74rem;
+    color:var(--ink-soft);
+    letter-spacing:0.04em;
+    padding-bottom:8px;
+  }
+</style>
+
+<div class="sheet">
+
+  <header>
+    <div class="waybill-row">
+      <span class="eyebrow">Manifiesto de esquema</span>
+      <span class="eyebrow" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);">MySQL 8</span>
+    </div>
+    <h1>RapidExpress</h1>
+    <p class="subtitle">
+      Diagrama entidad-relacion del sistema de gestion de flotas y rutas.
+      9 tablas, 8 relaciones — vehiculos, conductores, remitentes,
+      destinatarios, paquetes, rutas y su bitacora de mantenimiento y auditoria.
+    </p>
+    <div class="meta">
+      <span><b>Base de datos</b>&nbsp;rapidexpress</span>
+      <span><b>Motor</b>&nbsp;InnoDB</span>
+      <span><b>Tablas</b>&nbsp;9</span>
+      <span><b>Fuente</b>&nbsp;database/diagrama_entidad_relacion.mmd</span>
+    </div>
+  </header>
+
+  <div class="diagram-panel">
+    <div class="panel-label">Hoja 1 / 1 — vista completa</div>
+    <div class="diagram-scroll">
+<pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {
+  'primaryColor': '#f7e2d1',
+  'primaryTextColor': '#1b2a3d',
+  'primaryBorderColor': '#d9611f',
+  'lineColor': '#8fa0b3',
+  'tertiaryColor': '#ffffff',
+  'fontFamily': 'IBM Plex Mono, monospace',
+  'fontSize': '13px'
+}}}%%
+erDiagram
+    VEHICULO ||--o{ CONDUCTOR : "asignado a"
+    VEHICULO ||--o{ RUTA : "circula en"
+    VEHICULO ||--o{ MANTENIMIENTO : "recibe"
+    CONDUCTOR ||--o{ RUTA : "conduce"
+    REMITENTE ||--o{ PAQUETE : "envia"
+    DESTINATARIO ||--o{ PAQUETE : "recibe"
+    RUTA ||--o{ RUTA_PAQUETE : "incluye"
+    PAQUETE ||--o{ RUTA_PAQUETE : "asignado en"
+
+    VEHICULO {
+        int id PK
+        string placa UK
+        string marca
+        string modelo
+        int anio
+        decimal capacidad_carga
+        enum estado
+    }
+    CONDUCTOR {
+        int id PK
+        string numero_identificacion UK
+        string nombre
+        string tipo_licencia
+        string contacto
+        enum estado
+        int vehiculo_id FK
+    }
+    REMITENTE {
+        int id PK
+        string nombre
+        string direccion
+        string telefono
+    }
+    DESTINATARIO {
+        int id PK
+        string nombre
+        string direccion
+        string telefono
+    }
+    PAQUETE {
+        int id PK
+        string tracking_id UK
+        string descripcion
+        decimal peso
+        string dimensiones
+        string origen
+        string destino
+        enum estado
+        int remitente_id FK
+        int destinatario_id FK
+        datetime fecha_registro
+        datetime fecha_entrega
+    }
+    RUTA {
+        int id PK
+        int vehiculo_id FK
+        int conductor_id FK
+        datetime fecha
+        enum estado
+        decimal peso_total
+    }
+    RUTA_PAQUETE {
+        int ruta_id PK_FK
+        int paquete_id PK_FK
+    }
+    MANTENIMIENTO {
+        int id PK
+        int vehiculo_id FK
+        datetime fecha
+        string descripcion
+        decimal costo
+        int kilometraje
+    }
+    AUDITORIA {
+        int id PK
+        datetime fecha
+        string usuario
+        string accion
+        string tabla_afectada
+        string registro_id
+        string detalle
+        string ip
+    }
+</pre>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>Notas de lectura</h2>
+    <div class="legend-grid">
+      <div class="legend-item"><code>PK</code> Llave primaria de la tabla.</div>
+      <div class="legend-item"><code>FK</code> Llave foranea hacia otra entidad.</div>
+      <div class="legend-item"><code>UK</code> Restriccion de unicidad (placa, identificacion, tracking_id).</div>
+      <div class="legend-item"><code>||--o{</code> Relacion uno a muchos (un vehiculo tiene muchos mantenimientos).</div>
+      <div class="legend-item"><code>RUTA_PAQUETE</code> Tabla puente: una ruta agrupa varios paquetes sin exceder la capacidad de carga del vehiculo.</div>
+      <div class="legend-item"><code>AUDITORIA</code> Sin relaciones FK: se alimenta por codigo, no referencia otras tablas.</div>
+    </div>
+  </div>
+
+  <div class="export-note">
+    <span class="tag">Para el entregable</span>
+    <span>
+      Esta pagina es la vista de trabajo del ERD. Para el archivo pedido por la rubrica,
+      toma una captura de este diagrama (o expórtala desde este Artifact) y guardala como
+      <code>database/diagrama_entidad_relacion.png</code>. El origen editable en texto
+      queda en <code>database/diagrama_entidad_relacion.mmd</code>.
+    </span>
+  </div>
+
+  <footer>RAPIDEXPRESS · SISTEMA DE GESTION DE FLOTAS Y RUTAS · ESQUEMA DE BASE DE DATOS</footer>
+</div>
