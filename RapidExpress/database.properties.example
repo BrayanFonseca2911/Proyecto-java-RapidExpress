@@ -1,0 +1,24 @@
+# ============================================================
+# CONFIGURACION DE BASE DE DATOS - RAPIDEXPRESS (PLANTILLA)
+# ============================================================
+#
+# 1. Copia este archivo y renombralo a "database.properties"
+#    (debe quedar en la raiz del proyecto, junto a pom.xml).
+# 2. Reemplaza los valores de ejemplo con los datos reales de tu
+#    instancia de MySQL en la nube (AWS RDS, Azure Database for
+#    MySQL, Google Cloud SQL, Aiven, Railway, Clever Cloud, etc.).
+# 3. "database.properties" esta excluido en .gitignore: nunca se
+#    debe subir a git con credenciales reales.
+# ============================================================
+
+# URL de conexion JDBC: jdbc:mysql://<host>:<puerto>/<base_de_datos>
+db.url=jdbc:mysql://your-cloud-host.example.com:3306/rapidexpress
+
+# Usuario de MySQL
+db.user=your_db_user
+
+# Contrasena de MySQL
+db.password=your_db_password
+
+# Driver de MySQL (NO MODIFICAR)
+db.driver=com.mysql.cj.jdbc.Driver
