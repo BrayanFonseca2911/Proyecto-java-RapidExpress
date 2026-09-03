@@ -1,0 +1,19 @@
+# Maven build output
+/RapidExpress/target/
+
+# Real database credentials (use database.properties.example as template)
+/RapidExpress/database.properties
+
+# NetBeans / IDE
+/RapidExpress/nbproject/private/
+/RapidExpress/nb-configuration.xml
+.idea/
+*.iml
+.vscode/
+
+# Audit log generated at runtime
+/RapidExpress/auditoria.log
+
+# OS
+Thumbs.db
+.DS_Store
