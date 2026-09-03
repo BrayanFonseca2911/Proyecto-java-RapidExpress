@@ -1,5 +1,6 @@
 package rapidexpress.vista;
 
+import rapidexpress.dominio.Vehiculo;
 import rapidexpress.util.ConsoleUtil;
 
 import java.util.List;
@@ -96,6 +97,29 @@ public class ReporteView {
             System.out.printf("   %d. %s%n", i + 1, historial.get(i));
         }
 
+        ConsoleUtil.pausar();
+    }
+
+    /**
+     * Muestra los vehículos que están actualmente en mantenimiento
+     * @param vehiculos Lista de vehículos en mantenimiento
+     */
+    public void mostrarVehiculosEnMantenimiento(List<Vehiculo> vehiculos) {
+        ConsoleUtil.imprimirTitulo("Vehículos en Mantenimiento");
+
+        if (vehiculos == null || vehiculos.isEmpty()) {
+            ConsoleUtil.imprimirAdvertencia("No hay vehículos en mantenimiento");
+            ConsoleUtil.pausar();
+            return;
+        }
+
+        System.out.printf("   %-10s | %-15s | %-15s | %-10s%n", "Placa", "Marca", "Modelo", "Capacidad");
+        ConsoleUtil.imprimirSeparador();
+
+        vehiculos.forEach(v -> System.out.printf("   %-10s | %-15s | %-15s | %-10.2f%n",
+                v.getPlaca(), v.getMarca(), v.getModelo(), v.getCapacidadCarga()));
+
+        System.out.println("\n   Total: " + vehiculos.size() + " vehículo(s) en mantenimiento");
         ConsoleUtil.pausar();
     }
 
