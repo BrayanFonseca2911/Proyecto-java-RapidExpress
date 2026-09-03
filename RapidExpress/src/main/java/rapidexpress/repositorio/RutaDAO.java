@@ -18,7 +18,7 @@ import java.util.List;
  * 
  * @author User
  */
-public class RutaDAO implements IDAO<Ruta, Integer> {
+public class RutaDAO implements IRutaDAO {
     
     private final DBConnection dbConnection;
     private final VehiculoDAO vehiculoDAO;
@@ -32,8 +32,8 @@ public class RutaDAO implements IDAO<Ruta, Integer> {
         this.conductorDAO = new ConductorDAO();
         this.paqueteDAO = new PaqueteDAO();
     } catch (DataBaseException e) {
-        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
-        throw new RuntimeException("No se pudo inicializar MantenimientoDAO", e);
+        System.err.println("Error al conectar con la base de datos: " + e.getMessage());
+        throw new RuntimeException("No se pudo inicializar RutaDAO", e);
     }
 }
      

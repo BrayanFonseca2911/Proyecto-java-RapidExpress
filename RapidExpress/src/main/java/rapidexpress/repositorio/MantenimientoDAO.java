@@ -15,7 +15,7 @@ import java.util.List;
  * 
  * @author User
  */
-public class MantenimientoDAO implements IDAO<Mantenimiento, Integer> {
+public class MantenimientoDAO implements IMantenimientoDAO {
     
     private final DBConnection dbConnection;
     private final VehiculoDAO vehiculoDAO;
@@ -25,7 +25,7 @@ public class MantenimientoDAO implements IDAO<Mantenimiento, Integer> {
         this.dbConnection = DBConnection.getInstance();
         this.vehiculoDAO = new VehiculoDAO();
     } catch (DataBaseException e) {
-        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
+        System.err.println("Error al conectar con la base de datos: " + e.getMessage());
         throw new RuntimeException("No se pudo inicializar MantenimientoDAO", e);
     }
 }

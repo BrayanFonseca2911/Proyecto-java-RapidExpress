@@ -15,7 +15,7 @@ import java.util.List;
  * 
  * @author User
  */
-public class VehiculoDAO implements IDAO<Vehiculo, Integer> {
+public class VehiculoDAO implements IVehiculoDAO {
     
     private final DBConnection dbConnection;
     
@@ -26,10 +26,11 @@ public class VehiculoDAO implements IDAO<Vehiculo, Integer> {
     try {
         this.dbConnection = DBConnection.getInstance();
     } catch (DataBaseException e) {
-        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
+        System.err.println("Error al conectar con la base de datos: " + e.getMessage());
         throw new RuntimeException("No se pudo inicializar VehiculoDAO", e);
     }
 }
+    
     
     @Override
     public Vehiculo buscarPorId(Integer id) throws DataBaseException {

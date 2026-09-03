@@ -17,7 +17,7 @@ import java.util.List;
  * 
  * @author User
  */
-public class PaqueteDAO implements IDAO<Paquete, Integer> {
+public class PaqueteDAO implements IPaqueteDAO {
     
     private final DBConnection dbConnection;
     
@@ -25,8 +25,8 @@ public class PaqueteDAO implements IDAO<Paquete, Integer> {
     try {
         this.dbConnection = DBConnection.getInstance();
     } catch (DataBaseException e) {
-        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
-        throw new RuntimeException("No se pudo inicializar MantenimientoDAO", e);
+        System.err.println("Error al conectar con la base de datos: " + e.getMessage());
+        throw new RuntimeException("No se pudo inicializar PaqueteDAO", e);
     }
 }
     

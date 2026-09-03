@@ -14,7 +14,7 @@ import java.util.List;
  * 
  * @author User
  */
-public class ConductorDAO implements IDAO<Conductor, Integer> {
+public class ConductorDAO implements IConductorDAO {
     
     private final DBConnection dbConnection;
     
@@ -22,8 +22,8 @@ public class ConductorDAO implements IDAO<Conductor, Integer> {
     try {
         this.dbConnection = DBConnection.getInstance();
     } catch (DataBaseException e) {
-        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
-        throw new RuntimeException("No se pudo inicializar AuditoriaDAO", e);
+        System.err.println("Error al conectar con la base de datos: " + e.getMessage());
+        throw new RuntimeException("No se pudo inicializar ConductorDAO", e);
     }
 }
     
