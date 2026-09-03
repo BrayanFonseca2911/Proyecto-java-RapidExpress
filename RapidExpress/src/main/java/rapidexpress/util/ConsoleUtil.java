@@ -59,18 +59,18 @@ public class ConsoleUtil {
      */
     public static void imprimirTitulo(String titulo) {
         int longitud = titulo.length() + 4;
-        String linea = "═".repeat(longitud);
-        
-        System.out.println("\n╔" + linea + "╗");
-        System.out.println("║   " + titulo + "   ║");
-        System.out.println("╚" + linea + "╝");
+        String linea = "=".repeat(longitud);
+
+        System.out.println("\n+" + linea + "+");
+        System.out.println("|   " + titulo + "   |");
+        System.out.println("+" + linea + "+");
     }
     
     /**
      * Imprime un separador horizontal
      */
     public static void imprimirSeparador() {
-        System.out.println("════════════════════════════════════════");
+        System.out.println("========================================");
     }
     
     /**
@@ -78,7 +78,7 @@ public class ConsoleUtil {
      * @param mensaje Mensaje a mostrar
      */
     public static void imprimirExito(String mensaje) {
-        System.out.println(VERDE + "✅ " + mensaje + RESET);
+        System.out.println(VERDE + " " + mensaje + RESET);
     }
     
     /**
@@ -86,7 +86,7 @@ public class ConsoleUtil {
      * @param mensaje Mensaje a mostrar
      */
     public static void imprimirError(String mensaje) {
-        System.out.println(ROJO + "❌ " + mensaje + RESET);
+        System.out.println(ROJO + " " + mensaje + RESET);
     }
     
     /**
@@ -94,7 +94,7 @@ public class ConsoleUtil {
      * @param mensaje Mensaje a mostrar
      */
     public static void imprimirAdvertencia(String mensaje) {
-        System.out.println(AMARILLO + "⚠️  " + mensaje + RESET);
+        System.out.println(AMARILLO + "  " + mensaje + RESET);
     }
     
     /**
@@ -102,7 +102,7 @@ public class ConsoleUtil {
      * @param mensaje Mensaje a mostrar
      */
     public static void imprimirInfo(String mensaje) {
-        System.out.println(AZUL + "ℹ️  " + mensaje + RESET);
+        System.out.println(AZUL + "  " + mensaje + RESET);
     }
     
     /**
@@ -120,7 +120,7 @@ public class ConsoleUtil {
                 valor = Integer.parseInt(entrada);
                 return valor;
             } catch (NumberFormatException e) {
-                imprimirError("Por favor, ingrese un número entero válido");
+                imprimirError("Por favor, ingrese un numero entero valido");
             }
         }
     }
@@ -158,7 +158,7 @@ public class ConsoleUtil {
                 valor = Double.parseDouble(entrada);
                 return valor;
             } catch (NumberFormatException e) {
-                imprimirError("Por favor, ingrese un número decimal válido");
+                imprimirError("Por favor, ingrese un numero decimal valido");
             }
         }
     }
@@ -193,7 +193,7 @@ public class ConsoleUtil {
             if (!texto.isEmpty()) {
                 return texto;
             }
-            imprimirError("El campo no puede estar vacío");
+            imprimirError("El campo no puede estar vacio");
         }
     }
     

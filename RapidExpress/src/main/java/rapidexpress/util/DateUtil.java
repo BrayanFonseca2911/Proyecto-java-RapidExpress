@@ -85,13 +85,13 @@ public class DateUtil {
      */
     public static LocalDate parsearFecha(String fechaString) {
         if (fechaString == null || fechaString.trim().isEmpty()) {
-            throw new IllegalArgumentException("La fecha no puede estar vacía");
+            throw new IllegalArgumentException("La fecha no puede estar vacia");
         }
         
         try {
             return LocalDate.parse(fechaString.trim(), FORMATO_FECHA);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Formato de fecha inválido. Use: dd/MM/yyyy");
+            throw new IllegalArgumentException("Formato de fecha invalido. Use: dd/MM/yyyy");
         }
     }
     
@@ -103,13 +103,13 @@ public class DateUtil {
      */
     public static LocalDateTime parsearFechaHora(String fechaHoraString) {
         if (fechaHoraString == null || fechaHoraString.trim().isEmpty()) {
-            throw new IllegalArgumentException("La fecha y hora no pueden estar vacías");
+            throw new IllegalArgumentException("La fecha y hora no pueden estar vacias");
         }
         
         try {
             return LocalDateTime.parse(fechaHoraString.trim(), FORMATO_FECHA_HORA);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Formato inválido. Use: dd/MM/yyyy HH:mm:ss");
+            throw new IllegalArgumentException("Formato invalido. Use: dd/MM/yyyy HH:mm:ss");
         }
     }
     
