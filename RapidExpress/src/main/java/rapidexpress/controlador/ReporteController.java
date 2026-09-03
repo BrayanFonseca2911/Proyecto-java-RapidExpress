@@ -3,6 +3,7 @@ package rapidexpress.controlador;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import rapidexpress.dominio.Vehiculo;
 import rapidexpress.servicio.ReporteService;
 import rapidexpress.vista.ReporteView;
 
@@ -15,9 +16,13 @@ public class ReporteController {
 
     private ReporteView vista = new ReporteView();
     private ReporteService servicio = new ReporteService();
+    private final Scanner scanner;
+
+    public ReporteController(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void gestionar() {
-        Scanner scanner = new Scanner(System.in);
         boolean continuar = true;
 
         while (continuar) {
@@ -26,15 +31,18 @@ public class ReporteController {
 
             switch (opcion) {
                 case "1":
-                    reporteEntregasPorConducir(scanner);
+                    reporteEntregasPorConducir();
                     break;
                 case "2":
-                    reporteHistorialVehiculo(scanner);
+                    reporteHistorialVehiculo();
                     break;
                 case "3":
                     reporteResumenPaquetes();
                     break;
                 case "4":
+                    reporteVehiculosEnMantenimiento();
+                    break;
+                case "5":
                     continuar = false;
                     System.out.println("Volviendo al Menú Principal...");
                     break;
@@ -44,7 +52,7 @@ public class ReporteController {
         }
     }
 
-    private void reporteEntregasPorConducir(Scanner scanner) {
+    private void reporteEntregasPorConducir() {
         System.out.println("\n ====== ENTREGAS POR CONDUCTOR ======");
         System.out.println("Fecha de inicio (dd/mm/yyyy): ");
         String inicio = scanner.nextLine();
@@ -58,7 +66,7 @@ public class ReporteController {
         }
     }
 
-    private void reporteHistorialVehiculo(Scanner scanner) {
+    private void reporteHistorialVehiculo() {
         System.out.println("\n ====== REPORTE HISTORIAL DEL VEHICULO ======");
         System.out.println("\nPlaca del vehículo: ");
         String placa = scanner.nextLine();
@@ -75,6 +83,16 @@ public class ReporteController {
         try {
             Map<String, Integer> resumen = servicio.getResumenPaquetesPorEstado();
             vista.mostrarResumenPaquetes(resumen);
+        } catch (Exception e) {
+            System.out.println("Error al generar el reporte: " + e.getMessage());
+        }
+    }
+
+    private void reporteVehiculosEnMantenimiento() {
+        System.out.println("\n ====== VEHICULOS EN MANTENIMIENTO ======");
+        try {
+            List<Vehiculo> vehiculos = servicio.getVehiculosEnMantenimiento();
+            vista.mostrarVehiculosEnMantenimiento(vehiculos);
         } catch (Exception e) {
             System.out.println("Error al generar el reporte: " + e.getMessage());
         }

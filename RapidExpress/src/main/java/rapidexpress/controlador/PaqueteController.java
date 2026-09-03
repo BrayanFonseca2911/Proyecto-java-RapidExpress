@@ -18,9 +18,13 @@ public class PaqueteController {
 
     private PaqueteView vista = new PaqueteView();
     private PaqueteService servicio = new PaqueteService();
+    private final Scanner scanner;
+
+    public PaqueteController(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void gestionar() {
-        Scanner scanner = new Scanner(System.in);
         boolean continuar = true;
 
         while (continuar) {
@@ -29,16 +33,16 @@ public class PaqueteController {
 
             switch (opcion) {
                 case "1":
-                    registrarPaquete(scanner);
+                    registrarPaquete();
                     break;
                 case "2":
-                    consultarPaquete(scanner);
+                    consultarPaquete();
                     break;
                 case "3":
                     listarEnBodega();
                     break;
                 case "4":
-                    actualizarEstado(scanner);
+                    actualizarEstado();
                     break;
                 case "5":
                     continuar = false;
@@ -50,7 +54,7 @@ public class PaqueteController {
         }
     }
 
-    private void registrarPaquete(Scanner scanner) {
+    private void registrarPaquete() {
         System.out.println("\n ====== REGISTRAR PAQUETE ======");
         try {
             System.out.print("Descripcion del contenido: ");
@@ -90,7 +94,7 @@ public class PaqueteController {
         }
     }
 
-    private void consultarPaquete(Scanner scanner) {
+    private void consultarPaquete() {
         System.out.println("\n ====== CONSULTAR PAQUETES ======");
         System.out.println("\n Ingrese el tracking ID: ");
         String trackingId = scanner.nextLine();
@@ -116,7 +120,7 @@ public class PaqueteController {
         }
     }
 
-    private void actualizarEstado(Scanner scanner) {
+    private void actualizarEstado() {
         System.out.println("\n ====== ACTUALIZAR ESTADO ======");
         System.out.println("\n Ingrese el tracking ID: ");
         String trackingId = scanner.nextLine();

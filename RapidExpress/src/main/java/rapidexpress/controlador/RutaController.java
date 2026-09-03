@@ -17,9 +17,13 @@ public class RutaController {
 
     private RutaView vista = new RutaView();
     private RutaService servicio = new RutaService();
+    private final Scanner scanner;
+
+    public RutaController(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void gestionar() {
-        Scanner scanner = new Scanner(System.in);
         boolean continuar = true;
 
         while (continuar) {
@@ -28,19 +32,19 @@ public class RutaController {
 
             switch (opcion) {
                 case "1":
-                    crearRuta(scanner);
+                    crearRuta();
                     break;
                 case "2":
-                    iniciarRuta(scanner);
+                    iniciarRuta();
                     break;
                 case "3":
                     monitorearRutas();
                     break;
                 case "4":
-                    actualizarPaqueteEnRuta(scanner);
+                    actualizarPaqueteEnRuta();
                     break;
                 case "5":
-                    completarRuta(scanner);
+                    completarRuta();
                     break;
                 case "6":
                     continuar = false;
@@ -52,7 +56,7 @@ public class RutaController {
         }
     }
 
-    private void crearRuta(Scanner scanner) {
+    private void crearRuta() {
         System.out.println("\n ====== CREANDO UNA NUEVA RUTA ======");
         try {
             System.out.println("ID del vehículo: ");
@@ -79,7 +83,7 @@ public class RutaController {
         }
     }
 
-    private void iniciarRuta(Scanner scanner) {
+    private void iniciarRuta() {
         System.out.println("\n ====== INICIAR RUTA ======");
         System.out.println("\n Ingrese el ID de la ruta a iniciar: ");
         int rutaId = Integer.parseInt(scanner.nextLine());
@@ -102,7 +106,7 @@ public class RutaController {
         }
     }
 
-    private void actualizarPaqueteEnRuta(Scanner scanner) {
+    private void actualizarPaqueteEnRuta() {
         System.out.println("\n ====== ACTUALIZAR PAQUETE EN RUTA ======");
         System.out.println("\n ID de la ruta: ");
         int rutaId = Integer.parseInt(scanner.nextLine());
@@ -127,7 +131,7 @@ public class RutaController {
         }
     }
 
-    private void completarRuta(Scanner scanner) {
+    private void completarRuta() {
         System.out.println("\n ====== COMPLETAR RUTA ======");
         System.out.println("\nIngrese el ID de la ruta a completar: ");
         int rutaId = Integer.parseInt(scanner.nextLine());
