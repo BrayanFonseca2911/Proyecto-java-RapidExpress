@@ -16,9 +16,13 @@ public class ConductorController {
 
     private ConductorView vista = new ConductorView();
     private ConductorService servicio = new ConductorService();
+    private final Scanner scanner;
+
+    public ConductorController(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void gestionar() {
-        Scanner scanner = new Scanner(System.in);
         boolean continuar = true;
 
         while (continuar) {
@@ -27,19 +31,19 @@ public class ConductorController {
 
             switch (opcion) {
                 case "1":
-                    registrarConductor(scanner);
+                    registrarConductor();
                     break;
                 case "2":
                     listarConductores();
                     break;
                 case "3":
-                    buscarConductor(scanner);
+                    buscarConductor();
                     break;
                 case "4":
-                    asignarVehiculo(scanner);
+                    asignarVehiculo();
                     break;
                 case "5":
-                    liberarVehiculo(scanner);
+                    liberarVehiculo();
                     break;
                 case "6":
                     continuar = false;
@@ -51,7 +55,7 @@ public class ConductorController {
         }
     }
 
-    private void registrarConductor(Scanner scanner) {
+    private void registrarConductor() {
         System.out.println("\n ====== REGISTRAR CONDUCTOR ======");
         try {
             System.out.print("Numero de indentificación: ");
@@ -84,7 +88,7 @@ public class ConductorController {
         }
     }
 
-    private void buscarConductor(Scanner scanner) {
+    private void buscarConductor() {
         System.out.println("\n ====== BUSCAR CONDUCTOR ======");
         System.out.println("\n Numero de identificacion: ");
         String numeroId = scanner.nextLine();
@@ -100,7 +104,7 @@ public class ConductorController {
         }
     }
 
-    private void asignarVehiculo(Scanner scanner) {
+    private void asignarVehiculo() {
         System.out.println("\n ====== ASIGNAR VEHICULO ======");
         System.out.println("Numero de Identificacion: ");
         String numeroId = scanner.nextLine();
@@ -114,7 +118,7 @@ public class ConductorController {
         }
     }
 
-    private void liberarVehiculo(Scanner scanner) {
+    private void liberarVehiculo() {
         System.out.println("\n Numero de identificacion del conductor: ");
         String numeroId = scanner.nextLine();
         try {

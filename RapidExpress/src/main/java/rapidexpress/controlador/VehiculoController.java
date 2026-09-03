@@ -17,9 +17,13 @@ public class VehiculoController {
 
     private VehiculoView vista = new VehiculoView();
     private VehiculoService servicio = new VehiculoService();
+    private final Scanner scanner;
+
+    public VehiculoController(Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void gestionar() {
-        Scanner scanner = new Scanner(System.in);
         boolean continuar = true;
 
         while (continuar) {
@@ -28,19 +32,19 @@ public class VehiculoController {
 
             switch (opcion) {
                 case "1":
-                    registrarVehiculo(scanner);
+                    registrarVehiculo();
                     break;
                 case "2":
                     listarVehiculos();
                     break;
                 case "3":
-                    buscarVehiculo(scanner);
+                    buscarVehiculo();
                     break;
                 case "4":
-                    actualizarVehiculo(scanner);
+                    actualizarVehiculo();
                     break;
                 case "5":
-                    programarMantenimiento(scanner);
+                    programarMantenimiento();
                     break;
                 case "6":
                     continuar = false;
@@ -52,7 +56,7 @@ public class VehiculoController {
         }
     }
 
-    private void registrarVehiculo(Scanner scanner) {
+    private void registrarVehiculo() {
         System.out.println("\n ====== REGISTRAR VEHICULO ======");
         try {
             System.out.print("Placa: ");
@@ -88,7 +92,7 @@ public class VehiculoController {
         }
     }
 
-    private void buscarVehiculo(Scanner scanner) {
+    private void buscarVehiculo() {
         System.out.println("\n ====== BUSCAR VEHICULO ======");
         System.out.println("\n Ingrese la placa de su Vehiculo: ");
         String placa = scanner.nextLine();
@@ -104,7 +108,7 @@ public class VehiculoController {
         }
     }
 
-    private void actualizarVehiculo(Scanner scanner) {
+    private void actualizarVehiculo() {
         System.out.println("\n ====== ACTUALIZAR VEHICULO ======");
         System.out.println("\n Ingrese la placa del vehiculo a actualizar: ");
         String placa = scanner.nextLine();
@@ -149,7 +153,7 @@ public class VehiculoController {
         }
     }
 
-    private void programarMantenimiento(Scanner scanner) {
+    private void programarMantenimiento() {
         System.out.println("\n ====== PROGRAMAR MANTENIMIENTO ======");
         System.out.print("\n Ingrese la placa del vehiculo: ");
         String placa = scanner.nextLine();

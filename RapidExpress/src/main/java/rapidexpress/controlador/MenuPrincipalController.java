@@ -18,6 +18,7 @@ public class MenuPrincipalController {
     private PaqueteService paqueteservice;
     private RutaService rutaservice;
     private ReporteService reporteservice;
+    private final Scanner scanner;
 
 
     public MenuPrincipalController() {
@@ -29,11 +30,11 @@ public class MenuPrincipalController {
         this.paqueteservice  = new PaqueteService();
         this.rutaservice = new RutaService();
         this.reporteservice = new ReporteService();
+        this.scanner = new Scanner(System.in);
     }
 
     //Inicia el menú principal y gestiona la navegación
     public void iniciar(){
-        Scanner scanner = new Scanner(System.in);
         boolean continuar = true;
 
         while (continuar) {
@@ -70,31 +71,31 @@ public class MenuPrincipalController {
 
     public void gestionarVehiculos() {
         System.out.println("\n ==== MODULO DE VEHICULOS ==== ");
-        VehiculoController controller = new VehiculoController();
+        VehiculoController controller = new VehiculoController(scanner);
         controller.gestionar();
     }
 
     public void gestionarConductores() {
         System.out.println("\n ====== MODULO DE CONDUCTORES ====== ");
-        ConductorController controller = new ConductorController();
+        ConductorController controller = new ConductorController(scanner);
         controller.gestionar();
     }
 
     public void gestionarPaquetes() {
         System.out.println("\n ====== MODULO DE PAQUETES ====== ");
-        PaqueteController controller = new PaqueteController();
+        PaqueteController controller = new PaqueteController(scanner);
         controller.gestionar();
     }
 
     public void gestionarRutas() {
         System.out.println("\n ====== MODULO DE RUTAS ====== ");
-        RutaController controller = new RutaController();
+        RutaController controller = new RutaController(scanner);
         controller.gestionar();
     }
 
     public void gestionarReportes() {
         System.out.println("\n ====== MODULO DE REPORTES ======");
-        ReporteController controller = new ReporteController();
+        ReporteController controller = new ReporteController(scanner);
         controller.gestionar();
     }
 
