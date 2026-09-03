@@ -14,9 +14,13 @@ import rapidexpress.excepciones.DataBaseException;
 import rapidexpress.excepciones.RutaInvalidaException;
 import rapidexpress.excepciones.VehiculoNoDisponibleException;
 import rapidexpress.repositorio.RutaDAO;
+import rapidexpress.repositorio.IRutaDAO;
 import rapidexpress.repositorio.VehiculoDAO;
+import rapidexpress.repositorio.IVehiculoDAO;
 import rapidexpress.repositorio.ConductorDAO;
+import rapidexpress.repositorio.IConductorDAO;
 import rapidexpress.repositorio.PaqueteDAO;
+import rapidexpress.repositorio.IPaqueteDAO;
 import rapidexpress.auditoria.Auditoria;
 import rapidexpress.auditoria.AuditLogger;
 
@@ -29,22 +33,29 @@ import rapidexpress.util.DBConnection;
 /**
  * Servicio para la planificación y seguimiento de rutas.
  * Este servicio maneja transacciones complejas.
- * 
+ * Depende de las abstracciones {@code IxxxDAO} en lugar de las
+ * implementaciones JDBC concretas (DIP).
+ *
  * @author User
  */
 public class RutaService {
-    
-    private final RutaDAO rutaDAO;
-    private final VehiculoDAO vehiculoDAO;
-    private final ConductorDAO conductorDAO;
-    private final PaqueteDAO paqueteDAO;
+
+    private final IRutaDAO rutaDAO;
+    private final IVehiculoDAO vehiculoDAO;
+    private final IConductorDAO conductorDAO;
+    private final IPaqueteDAO paqueteDAO;
     private final AuditLogger auditLogger;
-    
+
     public RutaService() {
-        this.rutaDAO = new RutaDAO();
-        this.vehiculoDAO = new VehiculoDAO();
-        this.conductorDAO = new ConductorDAO();
-        this.paqueteDAO = new PaqueteDAO();
+        this(new RutaDAO(), new VehiculoDAO(), new ConductorDAO(), new PaqueteDAO());
+    }
+
+    public RutaService(IRutaDAO rutaDAO, IVehiculoDAO vehiculoDAO,
+                        IConductorDAO conductorDAO, IPaqueteDAO paqueteDAO) {
+        this.rutaDAO = rutaDAO;
+        this.vehiculoDAO = vehiculoDAO;
+        this.conductorDAO = conductorDAO;
+        this.paqueteDAO = paqueteDAO;
         this.auditLogger = AuditLogger.getInstance();
     }
     
@@ -67,7 +78,7 @@ public class RutaService {
         // Validar vehículo
         Vehiculo vehiculo = vehiculoDAO.buscarPorId(vehiculoId);
         if (vehiculo == null) {
-            throw new VehiculoNoDisponibleException("No existe vehículo con ID: " + vehiculoId);
+            throw new VehiculoNoDisponibleException("No existe vehiculo con ID: " + vehiculoId);
         }
         if (vehiculo.getEstado() != EstadoVehiculo.DISPONIBLE) {
             throw new VehiculoNoDisponibleException(vehiculo.getPlaca());
@@ -82,7 +93,7 @@ public class RutaService {
             throw new ConductorNoDisponibleException(conductor.getNombre());
         }
         if (conductor.getVehiculoAsignado() != null) {
-            throw new ConductorNoDisponibleException("El conductor ya tiene vehículo asignado");
+            throw new ConductorNoDisponibleException("El conductor ya tiene vehiculo asignado");
         }
         
         // Validar paquetes y calcular peso total
@@ -94,7 +105,7 @@ public class RutaService {
             }
             if (paquete.getEstado() != EstadoPaquete.EN_BODEGA) {
                 throw new RutaInvalidaException("El paquete " + paquete.getTrackingId() + 
-                                               " no está en bodega");
+                                               " no esta en bodega");
             }
             pesoTotal += paquete.getPeso();
         }
@@ -119,7 +130,7 @@ public class RutaService {
         
         // Registrar auditoría
         registrarAuditoria("CREATE", "RUTA", String.valueOf(ruta.getId()), 
-                          "Se creó ruta con " + paqueteIds.size() + " paquetes");
+                          "Se creo ruta con " + paqueteIds.size() + " paquetes");
         
         return ruta.getId();
     }
@@ -139,7 +150,7 @@ public class RutaService {
         
         // Validar que esté planificada
         if (ruta.getEstado() != EstadoRuta.PLANIFICADA) {
-            throw new RutaInvalidaException(rutaId, "La ruta no está planificada");
+            throw new RutaInvalidaException(rutaId, "La ruta no esta planificada");
         }
         
         // Iniciar transacción
@@ -169,7 +180,7 @@ public class RutaService {
             
             // Registrar auditoría
             registrarAuditoria("UPDATE", "RUTA", String.valueOf(rutaId), 
-                              "Se inició ruta con ID: " + rutaId);
+                              "Se inicio ruta con ID: " + rutaId);
             
         } catch (SQLException e) {
             // Revertir transacción en caso de error
@@ -177,7 +188,7 @@ public class RutaService {
                 try {
                     conn.rollback();
                 } catch (SQLException ex) {
-                    throw new DataBaseException("Error al revertir transacción", ex);
+                    throw new DataBaseException("Error al revertir transaccion", ex);
                 }
             }
             throw new DataBaseException("Error al iniciar ruta", e);
@@ -208,7 +219,7 @@ public class RutaService {
         
         // Validar que esté en curso
         if (ruta.getEstado() != EstadoRuta.EN_CURSO) {
-            throw new RutaInvalidaException(rutaId, "La ruta no está en curso");
+            throw new RutaInvalidaException(rutaId, "La ruta no esta en curso");
         }
         
         // Completar transacción
@@ -233,14 +244,14 @@ public class RutaService {
             
             // Registrar auditoría
             registrarAuditoria("UPDATE", "RUTA", String.valueOf(rutaId), 
-                              "Se completó ruta con ID: " + rutaId);
+                              "Se completo ruta con ID: " + rutaId);
             
         } catch (SQLException e) {
             if (conn != null) {
                 try {
                     conn.rollback();
                 } catch (SQLException ex) {
-                    throw new DataBaseException("Error al revertir transacción", ex);
+                    throw new DataBaseException("Error al revertir transaccion", ex);
                 }
             }
             throw new DataBaseException("Error al completar ruta", e);
@@ -278,18 +289,13 @@ public class RutaService {
         // Validar que la ruta esté en curso
         Ruta ruta = rutaDAO.buscarPorId(rutaId);
         if (ruta == null || ruta.getEstado() != EstadoRuta.EN_CURSO) {
-            throw new RutaInvalidaException("La ruta no está activa");
+            throw new RutaInvalidaException("La ruta no esta activa");
         }
         
         // Validar que el paquete pertenezca a la ruta
-        boolean pertenece = false;
-        for (Paquete paquete : ruta.getPaquetes()) {
-            if (paquete.getTrackingId().equals(trackingId)) {
-                pertenece = true;
-                break;
-            }
-        }
-        
+        boolean pertenece = ruta.getPaquetes().stream()
+                .anyMatch(paquete -> paquete.getTrackingId().equals(trackingId));
+
         if (!pertenece) {
             throw new RutaInvalidaException("El paquete no pertenece a esta ruta");
         }
@@ -299,7 +305,7 @@ public class RutaService {
         
         // Registrar auditoría
         registrarAuditoria("UPDATE", "PAQUETE", trackingId, 
-                          "Se actualizó estado en ruta " + rutaId + " a: " + nuevoEstado);
+                          "Se actualizo estado en ruta " + rutaId + " a: " + nuevoEstado);
     }
     
     /**

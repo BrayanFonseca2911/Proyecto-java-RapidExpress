@@ -4,22 +4,29 @@ import rapidexpress.auditoria.Auditoria;
 import rapidexpress.auditoria.AuditLogger;
 import rapidexpress.excepciones.DataBaseException;
 import rapidexpress.repositorio.AuditoriaDAO;
+import rapidexpress.repositorio.IAuditoriaDAO;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * Servicio para la gestión de auditoría.
- * 
+ * Depende de la abstracción {@link IAuditoriaDAO} en lugar de la
+ * implementación JDBC concreta (DIP).
+ *
  * @author User
  */
 public class AuditoriaService {
-    
-    private final AuditoriaDAO auditoriaDAO;
+
+    private final IAuditoriaDAO auditoriaDAO;
     private final AuditLogger auditLogger;
-    
+
     public AuditoriaService() {
-        this.auditoriaDAO = new AuditoriaDAO();
+        this(new AuditoriaDAO());
+    }
+
+    public AuditoriaService(IAuditoriaDAO auditoriaDAO) {
+        this.auditoriaDAO = auditoriaDAO;
         this.auditLogger = AuditLogger.getInstance();
     }
     

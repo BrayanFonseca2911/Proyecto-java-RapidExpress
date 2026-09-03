@@ -4,6 +4,7 @@ import rapidexpress.dominio.Paquete;
 import rapidexpress.dominio.Ruta;
 import rapidexpress.dominio.Vehiculo;
 import rapidexpress.enums.EstadoPaquete;
+import rapidexpress.enums.EstadoRuta;
 import rapidexpress.enums.EstadoVehiculo;
 import rapidexpress.excepciones.DataBaseException;
 import rapidexpress.repositorio.PaqueteDAO;
@@ -13,10 +14,11 @@ import rapidexpress.repositorio.VehiculoDAO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para la generación de reportes.
@@ -41,14 +43,17 @@ public class ReporteService {
      * @throws DataBaseException Si ocurre un error de base de datos
      */
     public Map<String, Integer> getResumenPaquetesPorEstado() throws DataBaseException {
-        Map<String, Integer> resumen = new HashMap<>();
-        
-        for (EstadoPaquete estado : EstadoPaquete.values()) {
-            List<Paquete> paquetes = paqueteDAO.listarPorEstado(estado);
-            resumen.put(estado.getDescripcion(), paquetes.size());
-        }
-        
-        return resumen;
+        // Se trae la lista completa una sola vez y se agrupa en memoria con
+        // Stream API, en vez de consultar la base de datos una vez por estado.
+        Map<EstadoPaquete, Long> conteoPorEstado = paqueteDAO.listarTodos().stream()
+                .collect(Collectors.groupingBy(Paquete::getEstado, Collectors.counting()));
+
+        return Arrays.stream(EstadoPaquete.values())
+                .collect(Collectors.toMap(
+                        EstadoPaquete::getDescripcion,
+                        estado -> conteoPorEstado.getOrDefault(estado, 0L).intValue(),
+                        (a, b) -> a,
+                        LinkedHashMap::new));
     }
     
     /**
@@ -67,29 +72,24 @@ public class ReporteService {
      * @throws DataBaseException Si ocurre un error de base de datos
      */
     public List<String> getHistorialRutasVehiculo(String placa) throws DataBaseException {
-        List<String> historial = new ArrayList<>();
-        
         // Buscar vehículo por placa
         Vehiculo vehiculo = vehiculoDAO.buscarPorPlaca(placa);
         if (vehiculo == null) {
-            throw new DataBaseException("No existe vehículo con placa: " + placa);
+            throw new DataBaseException("No existe vehiculo con placa: " + placa);
         }
-        
+
         // Obtener rutas completadas del vehículo
         List<Ruta> rutas = rutaDAO.listarHistorialVehiculo(vehiculo.getId());
-        
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        
-        for (Ruta ruta : rutas) {
-            String descripcion = String.format("Ruta #%d | %s | %d paquetes | %.2f kg",
-                ruta.getId(),
-                ruta.getFecha().format(formatter),
-                ruta.getPaquetes() != null ? ruta.getPaquetes().size() : 0,
-                ruta.getPesoTotal());
-            historial.add(descripcion);
-        }
-        
-        return historial;
+
+        return rutas.stream()
+                .map(ruta -> String.format("Ruta #%d | %s | %d paquetes | %.2f kg",
+                        ruta.getId(),
+                        ruta.getFecha().format(formatter),
+                        ruta.getPaquetes() != null ? ruta.getPaquetes().size() : 0,
+                        ruta.getPesoTotal()))
+                .collect(Collectors.toList());
     }
     
     /**
@@ -99,50 +99,37 @@ public class ReporteService {
      * @return Mapa con nombre del conductor y lista de entregas
      * @throws DataBaseException Si ocurre un error de base de datos
      */
-    public Map<String, List<String>> getEntregasPorConductor(String fechaInicioStr, String fechaFinStr) 
+    public Map<String, List<String>> getEntregasPorConductor(String fechaInicioStr, String fechaFinStr)
             throws DataBaseException {
-        
-        Map<String, List<String>> entregas = new HashMap<>();
-        
+
         try {
             // Parsear fechas
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             LocalDate fechaInicio = LocalDate.parse(fechaInicioStr.trim(), formatter);
             LocalDate fechaFin = LocalDate.parse(fechaFinStr.trim(), formatter);
-            
+
             LocalDateTime inicio = fechaInicio.atStartOfDay();
             LocalDateTime fin = fechaFin.plusDays(1).atStartOfDay();
-            
-            // Obtener todas las rutas completadas en el rango
-            List<Ruta> todasRutas = rutaDAO.listarTodos();
-            
-            for (Ruta ruta : todasRutas) {
-                // Filtrar por fecha y estado
-                if (ruta.getFecha().isAfter(inicio) && 
-                    ruta.getFecha().isBefore(fin) &&
-                    ruta.getEstado().toString().equals("COMPLETADA")) {
-                    
-                    String conductorNombre = ruta.getConductor() != null 
-                        ? ruta.getConductor().getNombre() 
-                        : "Desconocido";
-                    
-                    // Crear lista si no existe
-                    entregas.putIfAbsent(conductorNombre, new ArrayList<>());
-                    
-                    // Agregar descripción de la entrega
-                    String entregaDesc = String.format("Ruta #%d | %s | %d paquetes",
-                        ruta.getId(),
-                        ruta.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
-                        ruta.getPaquetes() != null ? ruta.getPaquetes().size() : 0);
-                    
-                    entregas.get(conductorNombre).add(entregaDesc);
-                }
-            }
-            
+            DateTimeFormatter formatterCompleto = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+            // Filtrar rutas completadas en el rango y agruparlas por conductor
+            return rutaDAO.listarTodos().stream()
+                    .filter(ruta -> ruta.getFecha().isAfter(inicio)
+                            && ruta.getFecha().isBefore(fin)
+                            && ruta.getEstado() == EstadoRuta.COMPLETADA)
+                    .collect(Collectors.groupingBy(
+                            ruta -> ruta.getConductor() != null ? ruta.getConductor().getNombre() : "Desconocido",
+                            Collectors.mapping(
+                                    ruta -> String.format("Ruta #%d | %s | %d paquetes",
+                                            ruta.getId(),
+                                            ruta.getFecha().format(formatterCompleto),
+                                            ruta.getPaquetes() != null ? ruta.getPaquetes().size() : 0),
+                                    Collectors.toList())));
+
+        } catch (DataBaseException e) {
+            throw e;
         } catch (Exception e) {
             throw new DataBaseException("Error al procesar fechas: " + e.getMessage(), e);
         }
-        
-        return entregas;
     }
 }

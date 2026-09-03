@@ -3,6 +3,7 @@ package rapidexpress.servicio;
 import rapidexpress.dominio.Mantenimiento;
 import rapidexpress.excepciones.DataBaseException;
 import rapidexpress.repositorio.MantenimientoDAO;
+import rapidexpress.repositorio.IMantenimientoDAO;
 import rapidexpress.auditoria.Auditoria;
 import rapidexpress.auditoria.AuditLogger;
 
@@ -11,16 +12,22 @@ import java.util.List;
 
 /**
  * Servicio para la gestión de mantenimientos.
- * 
+ * Depende de la abstracción {@link IMantenimientoDAO} en lugar de la
+ * implementación JDBC concreta (DIP).
+ *
  * @author User
  */
 public class MantenimientoService {
-    
-    private final MantenimientoDAO mantenimientoDAO;
+
+    private final IMantenimientoDAO mantenimientoDAO;
     private final AuditLogger auditLogger;
-    
+
     public MantenimientoService() {
-        this.mantenimientoDAO = new MantenimientoDAO();
+        this(new MantenimientoDAO());
+    }
+
+    public MantenimientoService(IMantenimientoDAO mantenimientoDAO) {
+        this.mantenimientoDAO = mantenimientoDAO;
         this.auditLogger = AuditLogger.getInstance();
     }
     
@@ -37,7 +44,7 @@ public class MantenimientoService {
         mantenimientoDAO.guardar(mantenimiento);
         
         registrarAuditoria("CREATE", "MANTENIMIENTO", String.valueOf(mantenimiento.getId()), 
-                          "Se registró mantenimiento para vehículo " + 
+                          "Se registro mantenimiento para vehiculo " + 
                           mantenimiento.getVehiculo().getPlaca());
     }
     
