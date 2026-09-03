@@ -1,207 +1,346 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.repositorio;
 
-// Importación para la gestión de conexiones JDBC con la base de datos MySQL.
-import java.sql.Connection;
-// Importación para mapear las fechas al formato reconocido por SQL.
-import java.sql.Date;
-// Importación para crear sentencias preparadas de SQL parametrizadas.
-import java.sql.PreparedStatement;
-// Importación para procesar las lecturas de filas devueltas por MySQL.
-import java.sql.ResultSet;
-// Importación para gestionar excepciones nativas de la API JDBC.
-import java.sql.SQLException;
-// Importación para instanciar listas dinámicas de Java.
-import java.util.ArrayList;
-// Importación para definir el contrato de retorno de colecciones.
-import java.util.List;
-
-// Importación del modelo de dominio Ruta.
 import rapidexpress.dominio.Ruta;
-// Importación de la excepción de persistencia personalizada.
+import rapidexpress.dominio.Vehiculo;
+import rapidexpress.dominio.Conductor;
+import rapidexpress.dominio.Paquete;
+import rapidexpress.enums.EstadoRuta;
 import rapidexpress.excepciones.DataBaseException;
-// Importación del patrón Singleton para obtener conexiones.
 import rapidexpress.util.DBConnection;
 
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Propósito: Gestionar la persistencia y operaciones de acceso a datos 
- * relativas a las rutas de distribución y logística de la flota.
+ * Clase de acceso a datos para la entidad Ruta.
  * 
  * @author User
  */
 public class RutaDAO implements IDAO<Ruta, Integer> {
-
-    // Consulta SQL para insertar una nueva ruta en el sistema.
-    private static final String SQL_INSERT = 
-        "INSERT INTO rutas (origen, destino, fecha, id_vehiculo, id_conductor, estado) VALUES (?, ?, ?, ?, ?, ?)";
-
-    // Consulta SQL para realizar la búsqueda de una ruta por su ID.
-    private static final String SQL_SELECT_BY_ID = 
-        "SELECT id, origen, destino, fecha, id_vehiculo, id_conductor, estado FROM rutas WHERE id = ?";
-
-    // Consulta SQL para consultar todas las rutas registradas.
-    private static final String SQL_SELECT_ALL = 
-        "SELECT id, origen, destino, fecha, id_vehiculo, id_conductor, estado FROM rutas";
-
-    // Consulta SQL para modificar los datos de una ruta existente.
-    private static final String SQL_UPDATE = 
-        "UPDATE rutas SET origen = ?, destino = ?, fecha = ?, id_vehiculo = ?, id_conductor = ?, estado = ? WHERE id = ?";
-
-    // Consulta SQL para realizar el borrado físico de una ruta.
-    private static final String SQL_DELETE = 
-        "DELETE FROM rutas WHERE id = ?";
-
-    @Override
-    public boolean guardar(Ruta ruta) throws DataBaseException {
-        // Inicia el bloque try-with-resources que cierra la conexión y la sentencia automáticamente.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT)) {
-
-            // Asigna la ciudad o dirección de origen.
-            stmt.setString(1, ruta.getOrigen());
-            // Asigna la ciudad o dirección de destino.
-            stmt.setString(2, ruta.getDestino());
-            // Realiza la conversión de LocalDate a java.sql.Date validando nulos.
-            stmt.setDate(3, ruta.getFecha() != null ? Date.valueOf(ruta.getFecha()) : null);
-            // Asigna la clave foránea del vehículo asignado a la ruta.
-            stmt.setInt(4, ruta.getIdVehiculo());
-            // Asigna la clave foránea del conductor a cargo de la ruta.
-            stmt.setInt(5, ruta.getIdConductor());
-            // Asigna el estado operativo de la ruta (ej. PROGRAMADA, EN_PROCESO, FINALIZADA).
-            stmt.setString(6, ruta.getEstado());
-
-            // Retorna verdadero si se insertó al menos una fila.
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            // Relanza la excepción encapsulada en DataBaseException.
-            throw new DataBaseException("Error al guardar la ruta: " + e.getMessage(), e);
-        }
+    
+    private final DBConnection dbConnection;
+    private final VehiculoDAO vehiculoDAO;
+    private final ConductorDAO conductorDAO;
+    private final PaqueteDAO paqueteDAO;
+    
+    public RutaDAO(){
+    try {
+        this.dbConnection = DBConnection.getInstance();
+        this.vehiculoDAO = new VehiculoDAO();
+        this.conductorDAO = new ConductorDAO();
+        this.paqueteDAO = new PaqueteDAO();
+    } catch (DataBaseException e) {
+        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
+        throw new RuntimeException("No se pudo inicializar MantenimientoDAO", e);
     }
-
+}
+     
     @Override
     public Ruta buscarPorId(Integer id) throws DataBaseException {
-        // Declaración del objeto resultado.
-        Ruta ruta = null;
-
-        // Abre la conexión y prepara la consulta filtrada por la clave primaria.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_BY_ID)) {
-
-            // Asigna el identificador a la consulta parametrizada.
+        String sql = "SELECT * FROM ruta WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
             stmt.setInt(1, id);
-
-            // Ejecuta el query y procesa los resultados devueltos.
-            try (ResultSet rs = stmt.executeQuery()) {
-                // Si existe un resultado, transfiere las columnas al objeto entidad.
-                if (rs.next()) {
-                    ruta = mapearResultSetARuta(rs);
-                }
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapearRuta(rs);
             }
-
+            return null;
+            
         } catch (SQLException e) {
-            // Notifica el error de lectura envolviéndolo en DataBaseException.
-            throw new DataBaseException("Error al buscar ruta por ID: " + e.getMessage(), e);
+            throw new DataBaseException("SELECT", "ruta", e);
         }
-
-        // Retorna la ruta recuperada o null.
-        return ruta;
     }
-
+    
     @Override
     public List<Ruta> listarTodos() throws DataBaseException {
-        // Inicializa la lista receptora para acumular todas las rutas.
-        List<Ruta> lista = new ArrayList<>();
-
-        // Consulta masiva de la tabla rutas.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_ALL);
+        String sql = "SELECT * FROM ruta ORDER BY fecha DESC";
+        List<Ruta> rutas = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
-
-            // Itera secuencialmente sobre el conjunto de resultados.
+            
             while (rs.next()) {
-                // Mapea y agrega la ruta a la lista.
-                lista.add(mapearResultSetARuta(rs));
+                rutas.add(mapearRuta(rs));
             }
-
+            return rutas;
+            
         } catch (SQLException e) {
-            // Captura el fallo y lanza la excepción del sistema.
-            throw new DataBaseException("Error al listar las rutas: " + e.getMessage(), e);
+            throw new DataBaseException("SELECT", "ruta", e);
         }
-
-        // Retorna la lista con los registros de rutas.
-        return lista;
     }
-
+    
+    /**
+     * Lista rutas activas (en curso)
+     * @return Lista de rutas en curso
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public List<Ruta> listarActivas() throws DataBaseException {
+        String sql = "SELECT * FROM ruta WHERE estado = 'EN_CURSO' ORDER BY fecha DESC";
+        List<Ruta> rutas = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                rutas.add(mapearRuta(rs));
+            }
+            return rutas;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "ruta", e);
+        }
+    }
+    
+    /**
+     * Lista rutas por vehículo
+     * @param vehiculoId ID del vehículo
+     * @return Lista de rutas del vehículo
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public List<Ruta> listarPorVehiculo(Integer vehiculoId) throws DataBaseException {
+        String sql = "SELECT * FROM ruta WHERE vehiculo_id = ? ORDER BY fecha DESC";
+        List<Ruta> rutas = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, vehiculoId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                rutas.add(mapearRuta(rs));
+            }
+            return rutas;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "ruta", e);
+        }
+    }
+    
+    /**
+     * Lista historial de rutas completadas de un vehículo
+     * @param vehiculoId ID del vehículo
+     * @return Lista de rutas completadas
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public List<Ruta> listarHistorialVehiculo(Integer vehiculoId) throws DataBaseException {
+        String sql = "SELECT * FROM ruta WHERE vehiculo_id = ? AND estado = 'COMPLETADA' ORDER BY fecha DESC";
+        List<Ruta> rutas = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, vehiculoId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                rutas.add(mapearRuta(rs));
+            }
+            return rutas;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "ruta", e);
+        }
+    }
+    
+    @Override
+    public boolean guardar(Ruta ruta) throws DataBaseException {
+        String sql = "INSERT INTO ruta (vehiculo_id, conductor_id, fecha, estado, peso_total) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            stmt.setInt(1, ruta.getVehiculo().getId());
+            stmt.setInt(2, ruta.getConductor().getId());
+            stmt.setTimestamp(3, Timestamp.valueOf(ruta.getFecha()));
+            stmt.setString(4, ruta.getEstado().name());
+            stmt.setDouble(5, ruta.getPesoTotal());
+            
+            int filasAfectadas = stmt.executeUpdate();
+            
+            if (filasAfectadas > 0) {
+                ResultSet keys = stmt.getGeneratedKeys();
+                if (keys.next()) {
+                    ruta.setId(keys.getInt(1));
+                }
+                return true;
+            }
+            return false;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("INSERT", "ruta", e);
+        }
+    }
+    
     @Override
     public boolean actualizar(Ruta ruta) throws DataBaseException {
-        // Ejecuta la modificación del registro por ID.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
-
-            // Setea los campos con los nuevos valores recibidos.
-            stmt.setString(1, ruta.getOrigen());
-            stmt.setString(2, ruta.getDestino());
-            stmt.setDate(3, ruta.getFecha() != null ? Date.valueOf(ruta.getFecha()) : null);
-            stmt.setInt(4, ruta.getIdVehiculo());
-            stmt.setInt(5, ruta.getIdConductor());
-            stmt.setString(6, ruta.getEstado());
-            // Asigna el ID para especificar la fila en el WHERE.
-            stmt.setInt(7, ruta.getId());
-
-            // Retorna verdadero si afectó un registro.
-            return stmt.executeUpdate() > 0;
-
+        String sql = "UPDATE ruta SET vehiculo_id = ?, conductor_id = ?, " +
+                     "fecha = ?, estado = ?, peso_total = ? WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, ruta.getVehiculo().getId());
+            stmt.setInt(2, ruta.getConductor().getId());
+            stmt.setTimestamp(3, Timestamp.valueOf(ruta.getFecha()));
+            stmt.setString(4, ruta.getEstado().name());
+            stmt.setDouble(5, ruta.getPesoTotal());
+            stmt.setInt(6, ruta.getId());
+            
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
         } catch (SQLException e) {
-            // Propaga la excepción hacia la capa superior.
-            throw new DataBaseException("Error al actualizar la ruta: " + e.getMessage(), e);
+            throw new DataBaseException("UPDATE", "ruta", e);
         }
     }
-
+    
     @Override
     public boolean eliminar(Integer id) throws DataBaseException {
-        // Prepara la consulta para borrar la fila según su ID.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
-
-            // Asigna el parámetro ID.
+        String sql = "DELETE FROM ruta WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
             stmt.setInt(1, id);
-            // Ejecuta el borrado y confirma el resultado.
-            return stmt.executeUpdate() > 0;
-
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
         } catch (SQLException e) {
-            // Notifica la falla de eliminación.
-            throw new DataBaseException("Error al eliminar la ruta: " + e.getMessage(), e);
+            throw new DataBaseException("DELETE", "ruta", e);
         }
     }
-
-    // Método auxiliar privado que convierte las columnas de una fila en un objeto Ruta.
-    private Ruta mapearResultSetARuta(ResultSet rs) throws SQLException {
-        // Instancia un nuevo objeto entidad.
-        Ruta r = new Ruta();
-        // Setea el identificador único.
-        r.setId(rs.getInt("id"));
-        // Setea el origen.
-        r.setOrigen(rs.getString("origen"));
-        // Setea el destino.
-        r.setDestino(rs.getString("destino"));
+    
+    /**
+     * Asigna un paquete a una ruta
+     * @param rutaId ID de la ruta
+     * @param paqueteId ID del paquete
+     * @return true si se asignó correctamente
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public boolean asignarPaqueteARuta(Integer rutaId, Integer paqueteId) throws DataBaseException {
+        String sql = "INSERT INTO ruta_paquete (ruta_id, paquete_id) VALUES (?, ?)";
         
-        // Lee la fecha de la base de datos.
-        Date sqlDate = rs.getDate("fecha");
-        // Si no es nula, la mapea a LocalDate.
-        if (sqlDate != null) {
-            r.setFecha(sqlDate.toLocalDate());
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, rutaId);
+            stmt.setInt(2, paqueteId);
+            
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("INSERT", "ruta_paquete", e);
+        }
+    }
+    
+    /**
+     * Obtiene los paquetes asignados a una ruta
+     * @param rutaId ID de la ruta
+     * @return Lista de paquetes de la ruta
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public List<Paquete> obtenerPaquetesDeRuta(Integer rutaId) throws DataBaseException {
+        String sql = "SELECT p.* FROM paquete p " +
+                     "INNER JOIN ruta_paquete rp ON p.id = rp.paquete_id " +
+                     "WHERE rp.ruta_id = ?";
+        List<Paquete> paquetes = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, rutaId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                paquetes.add(paqueteDAO.buscarPorId(rs.getInt("id")));
+            }
+            return paquetes;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "ruta_paquete", e);
+        }
+    }
+    
+    /**
+     * Inicia una ruta (cambia estado a EN_CURSO)
+     * @param rutaId ID de la ruta
+     * @return true si se inició correctamente
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public boolean iniciarRuta(Integer rutaId) throws DataBaseException {
+        String sql = "UPDATE ruta SET estado = 'EN_CURSO' WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, rutaId);
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("UPDATE", "ruta", e);
+        }
+    }
+    
+    /**
+     * Completa una ruta (cambia estado a COMPLETADA)
+     * @param rutaId ID de la ruta
+     * @return true si se completó correctamente
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public boolean completarRuta(Integer rutaId) throws DataBaseException {
+        String sql = "UPDATE ruta SET estado = 'COMPLETADA' WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, rutaId);
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("UPDATE", "ruta", e);
+        }
+    }
+    
+    /**
+     * Mapea un ResultSet a un objeto Ruta
+     */
+    private Ruta mapearRuta(ResultSet rs) throws SQLException, DataBaseException {
+        Ruta ruta = new Ruta();
+        ruta.setId(rs.getInt("id"));
+        
+        // Mapear vehículo
+        Vehiculo vehiculo = vehiculoDAO.buscarPorId(rs.getInt("vehiculo_id"));
+        ruta.setVehiculo(vehiculo);
+        
+        // Mapear conductor
+        Conductor conductor = conductorDAO.buscarPorId(rs.getInt("conductor_id"));
+        ruta.setConductor(conductor);
+        
+        Timestamp fecha = rs.getTimestamp("fecha");
+        if (fecha != null) {
+            ruta.setFecha(fecha.toLocalDateTime());
         }
         
-        // Setea las claves foráneas y el estado.
-        r.setIdVehiculo(rs.getInt("id_vehiculo"));
-        r.setIdConductor(rs.getInt("id_conductor"));
-        r.setEstado(rs.getString("estado"));
+        ruta.setEstado(EstadoRuta.valueOf(rs.getString("estado")));
+        ruta.setPesoTotal(rs.getDouble("peso_total"));
         
-        // Deuelve el objeto instanciado.
-        return r;
+        // Cargar paquetes de la ruta
+        List<Paquete> paquetes = obtenerPaquetesDeRuta(ruta.getId());
+        ruta.setPaquetes(paquetes);
+        
+        return ruta;
     }
 }

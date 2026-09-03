@@ -1,64 +1,54 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package rapidexpress.repositorio;
 
-// Importación de la interfaz List para definir los retornos de colecciones de datos.
-import java.util.List;
-// Importación de la excepción personalizada para la captura de errores en la capa de datos.
 import rapidexpress.excepciones.DataBaseException;
+import java.util.List;
 
 /**
- * Interfaz genérica para operaciones CRUD de acceso a datos
+ * Interfaz genérica que define las operaciones CRUD básicas
+ * para todas las entidades del sistema.
  * 
+ * @param <T> Tipo de entidad (Vehiculo, Conductor, Paquete, etc.)
+ * @param <ID> Tipo del identificador de la entidad (Integer, String, etc.)
  * @author User
- * @param <T> Tipo de entidad de dominio
- * @param <ID> Tipo del identificador clave de la entidad
  */
 public interface IDAO<T, ID> {
     
     /**
-     * Busca una entidad por su ID
+     * Busca una entidad por su identificador único
      * @param id Identificador de la entidad
      * @return La entidad encontrada o null si no existe
-     * @throws DataBaseException Si hay error de base de datos
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    // Firma del método para consultar un único registro según su clave primaria.
     T buscarPorId(ID id) throws DataBaseException;
     
     /**
-     * Lista todas las entidades
-     * @return Lista de entidades
-     * @throws DataBaseException Si hay error de base de datos
+     * Lista todas las entidades de este tipo
+     * @return Lista de todas las entidades
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    // Firma del método para obtener el conjunto completo de registros de la tabla.
     List<T> listarTodos() throws DataBaseException;
     
     /**
-     * Guarda una nueva entidad
+     * Guarda una nueva entidad en la base de datos
      * @param entidad Entidad a guardar
-     * @return true si se guardó correctamente
-     * @throws DataBaseException Si hay error de base de datos
+     * @return true si se guardó correctamente, false en caso contrario
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    // Firma del método para insertar un nuevo registro en la base de datos.
     boolean guardar(T entidad) throws DataBaseException;
     
     /**
-     * Actualiza una entidad existente
-     * @param entidad Entidad con datos actualizados
-     * @return true si se actualizó correctamente
-     * @throws DataBaseException Si hay error de base de datos
+     * Actualiza una entidad existente en la base de datos
+     * @param entidad Entidad con los datos actualizados
+     * @return true si se actualizó correctamente, false en caso contrario
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    // Firma del método para modificar la información de un registro existente.
     boolean actualizar(T entidad) throws DataBaseException;
     
     /**
-     * Elimina una entidad por su ID
+     * Elimina una entidad por su identificador
      * @param id Identificador de la entidad a eliminar
-     * @return true si se eliminó correctamente
-     * @throws DataBaseException Si hay error de base de datos
+     * @return true si se eliminó correctamente, false en caso contrario
+     * @throws DataBaseException Si ocurre un error de base de datos
      */
-    // Firma del método para realizar el borrado físico de una entidad por su ID.
     boolean eliminar(ID id) throws DataBaseException;
 }

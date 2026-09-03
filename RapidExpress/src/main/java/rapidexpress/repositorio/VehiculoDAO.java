@@ -1,193 +1,220 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.repositorio;
 
-// Importación de la interfaz Connection para administrar las sesiones JDBC con MySQL.
-import java.sql.Connection;
-// Importación de PreparedStatement para ejecutar consultas parametrizadas de forma segura.
-import java.sql.PreparedStatement;
-// Importación de ResultSet para procesar los datos devueltos por la base de datos.
-import java.sql.ResultSet;
-// Importación de SQLException para la gestión y captura de errores de la capa de persistencia.
-import java.sql.SQLException;
-// Importación de ArrayList para almacenar la lista de objetos de retorno.
-import java.util.ArrayList;
-// Importación de la interfaz List para definir los tipos de retorno en las colecciones.
-import java.util.List;
-
-// Importación del modelo de dominio Vehiculo.
 import rapidexpress.dominio.Vehiculo;
-// Importación del singleton DBConnection para obtener la conexión a MySQL.
+import rapidexpress.enums.EstadoVehiculo;
+import rapidexpress.excepciones.DataBaseException;
 import rapidexpress.util.DBConnection;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Propósito: Implementar el acceso a datos y las operaciones CRUD para los vehículos
- * de la flota dentro del sistema RapidExpress.
+ * Clase de acceso a datos para la entidad Vehiculo.
+ * Implementa operaciones CRUD y consultas específicas.
  * 
  * @author User
  */
 public class VehiculoDAO implements IDAO<Vehiculo, Integer> {
-
-    // Consulta SQL para insertar un nuevo vehículo en la base de datos.
-    private static final String SQL_INSERT = 
-        "INSERT INTO vehiculos (placa, modelo, capacidad_kg, estado) VALUES (?, ?, ?, ?)";
-
-    // Consulta SQL para buscar un vehículo por su identificador primario.
-    private static final String SQL_SELECT_BY_ID = 
-        "SELECT id, placa, modelo, capacidad_kg, estado FROM vehiculos WHERE id = ?";
-
-    // Consulta SQL para obtener todos los vehículos registrados.
-    private static final String SQL_SELECT_ALL = 
-        "SELECT id, placa, modelo, capacidad_kg, estado FROM vehiculos";
-
-    // Consulta SQL para actualizar los atributos de un vehículo existente.
-    private static final String SQL_UPDATE = 
-        "UPDATE vehiculos SET placa = ?, modelo = ?, capacidad_kg = ?, estado = ? WHERE id = ?";
-
-    // Consulta SQL para eliminar un registro de vehículo mediante su ID.
-    private static final String SQL_DELETE = 
-        "DELETE FROM vehiculos WHERE id = ?";
-
-    @Override
-    public boolean crear(Vehiculo vehiculo) {
-        // Inicia el try-with-resources garantizando el cierre de la conexión y sentencia.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT)) {
-
-            // Asigna la placa del vehículo al primer parámetro de la consulta.
-            stmt.setString(1, vehiculo.getPlaca());
-            // Asigna el modelo o descripción del vehículo.
-            stmt.setString(2, vehiculo.getModelo());
-            // Asigna la capacidad de carga en kilogramos como valor decimal.
-            stmt.setDouble(3, vehiculo.getCapacidadKg());
-            // Asigna el estado operativo del vehículo (ej. ACTIVO, MANTENIMIENTO).
-            stmt.setString(4, vehiculo.getEstado());
-
-            // Ejecuta la inserción y retorna verdadero si se modificó al menos un registro.
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            // Registra el error en la consola si falla la operación en MySQL.
-            System.err.println("Error al crear vehículo: " + e.getMessage());
-            // Retorna falso notificando que la operación no fue exitosa.
-            return false;
-        }
+    
+    private final DBConnection dbConnection;
+    
+    /**
+     * Constructor que inicializa la conexión a base de datos
+     */
+    public VehiculoDAO() {
+    try {
+        this.dbConnection = DBConnection.getInstance();
+    } catch (DataBaseException e) {
+        System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
+        throw new RuntimeException("No se pudo inicializar VehiculoDAO", e);
     }
-
+}
+    
     @Override
-    public Vehiculo buscarPorId(Integer id) {
-        // Instancia la variable donde se almacenará el resultado encontrado.
-        Vehiculo vehiculo = null;
-
-        // Abre la conexión y prepara la consulta de búsqueda por identificador.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_BY_ID)) {
-
-            // Pasa el ID recibido como parámetro a la consulta SQL.
-            stmt.setInt(1, id);
-
-            // Ejecuta el query y procesa el ResultSet devuelto.
-            try (ResultSet rs = stmt.executeQuery()) {
-                // Si la consulta arroja una fila, procede a transformarla a objeto Java.
-                if (rs.next()) {
-                    vehiculo = mapearResultSetAVehiculo(rs);
-                }
-            }
-
-        } catch (SQLException e) {
-            // Captura la excepción y reporta el mensaje de error.
-            System.err.println("Error al buscar vehículo por ID: " + e.getMessage());
-        }
-
-        // Retorna el objeto poblado o nulo si no existía el registro.
-        return vehiculo;
-    }
-
-    @Override
-    public List<Vehiculo> listarTodos() {
-        // Inicializa la lista receptora para acumular todos los vehículos.
-        List<Vehiculo> lista = new ArrayList<>();
-
-        // Intenta establecer la conexión y consulta todas las filas de la tabla.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_ALL);
-             ResultSet rs = stmt.executeQuery()) {
-
-            // Recorre secuencialmente cada una de las filas recuperadas.
-            while (rs.next()) {
-                // Transforma la fila actual y la añade a la lista de respuesta.
-                lista.add(mapearResultSetAVehiculo(rs));
-            }
-
-        } catch (SQLException e) {
-            // Muestra en la consola de error la falla ocurrida.
-            System.err.println("Error al listar vehículos: " + e.getMessage());
-        }
-
-        // Retorna la colección completa de vehículos.
-        return lista;
-    }
-
-    @Override
-    public boolean actualizar(Vehiculo vehiculo) {
-        // Abre la conexión y prepara la sentencia UPDATE.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
-
-            // Asigna los parámetros correspondientes a los nuevos valores.
-            stmt.setString(1, vehiculo.getPlaca());
-            stmt.setString(2, vehiculo.getModelo());
-            stmt.setDouble(3, vehiculo.getCapacidadKg());
-            stmt.setString(4, vehiculo.getEstado());
-            // Asigna el identificador del vehículo en la cláusula WHERE.
-            stmt.setInt(5, vehiculo.getId());
-
-            // Retorna verdadero si la actualización afectó una fila.
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            // Reporta la falla al actualizar en consola.
-            System.err.println("Error al actualizar vehículo: " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public boolean eliminar(Integer id) {
-        // Inicia el bloque try-with-resources con la sentencia de borrado.
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
-
-            // Indica la clave primaria del registro que se desea eliminar.
-            stmt.setInt(1, id);
-            // Retorna verdadero si el borrado afectó una fila en MySQL.
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            // Reporta la excepción producida en la base de datos.
-            System.err.println("Error al eliminar vehículo: " + e.getMessage());
-            return false;
-        }
-    }
-
-    // Método privado auxiliar para mapear una fila de ResultSet a un objeto Vehiculo.
-    private Vehiculo mapearResultSetAVehiculo(ResultSet rs) throws SQLException {
-        // Instancia un nuevo objeto de la entidad Vehiculo.
-        Vehiculo v = new Vehiculo();
-        // Asigna la clave primaria recuperada.
-        v.setId(rs.getInt("id"));
-        // Mapea la columna de la placa vehicular.
-        v.setPlaca(rs.getString("placa"));
-        // Mapea el modelo o marca del vehículo.
-        v.setModelo(rs.getString("modelo"));
-        // Mapea el peso máximo soportado en kilogramos.
-        v.setCapacidadKg(rs.getDouble("capacidad_kg"));
-        // Mapea la cadena que representa el estado del vehículo.
-        v.setEstado(rs.getString("estado"));
+    public Vehiculo buscarPorId(Integer id) throws DataBaseException {
+        String sql = "SELECT * FROM vehiculo WHERE id = ?";
         
-        // Retorna el objeto mapeado.
-        return v;
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapearVehiculo(rs);
+            }
+            return null;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "vehiculo", e);
+        }
+    }
+    
+    /**
+     * Busca un vehículo por su placa
+     * @param placa Placa del vehículo
+     * @return Vehiculo encontrado o null
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public Vehiculo buscarPorPlaca(String placa) throws DataBaseException {
+        String sql = "SELECT * FROM vehiculo WHERE placa = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, placa);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapearVehiculo(rs);
+            }
+            return null;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "vehiculo", e);
+        }
+    }
+    
+    @Override
+    public List<Vehiculo> listarTodos() throws DataBaseException {
+        String sql = "SELECT * FROM vehiculo ORDER BY placa";
+        List<Vehiculo> vehiculos = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                vehiculos.add(mapearVehiculo(rs));
+            }
+            return vehiculos;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "vehiculo", e);
+        }
+    }
+    
+    /**
+     * Lista vehículos por estado
+     * @param estado Estado a filtrar
+     * @return Lista de vehículos con el estado especificado
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public List<Vehiculo> listarPorEstado(EstadoVehiculo estado) throws DataBaseException {
+        String sql = "SELECT * FROM vehiculo WHERE estado = ? ORDER BY placa";
+        List<Vehiculo> vehiculos = new ArrayList<>();
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, estado.name());
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                vehiculos.add(mapearVehiculo(rs));
+            }
+            return vehiculos;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("SELECT", "vehiculo", e);
+        }
+    }
+    
+    /**
+     * Lista solo los vehículos disponibles
+     * @return Lista de vehículos disponibles
+     * @throws DataBaseException Si ocurre un error de base de datos
+     */
+    public List<Vehiculo> listarDisponibles() throws DataBaseException {
+        return listarPorEstado(EstadoVehiculo.DISPONIBLE);
+    }
+    
+    @Override
+    public boolean guardar(Vehiculo vehiculo) throws DataBaseException {
+        String sql = "INSERT INTO vehiculo (placa, marca, modelo, anio, capacidad_carga, estado) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            stmt.setString(1, vehiculo.getPlaca());
+            stmt.setString(2, vehiculo.getMarca());
+            stmt.setString(3, vehiculo.getModelo());
+            stmt.setInt(4, vehiculo.getYear());
+            stmt.setDouble(5, vehiculo.getCapacidadCarga());
+            stmt.setString(6, vehiculo.getEstado().name());
+            
+            int filasAfectadas = stmt.executeUpdate();
+            
+            if (filasAfectadas > 0) {
+                ResultSet keys = stmt.getGeneratedKeys();
+                if (keys.next()) {
+                    vehiculo.setId(keys.getInt(1));
+                }
+                return true;
+            }
+            return false;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("INSERT", "vehiculo", e);
+        }
+    }
+    
+    @Override
+    public boolean actualizar(Vehiculo vehiculo) throws DataBaseException {
+        String sql = "UPDATE vehiculo SET marca = ?, modelo = ?, anio = ?, " +
+                     "capacidad_carga = ?, estado = ? WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, vehiculo.getMarca());
+            stmt.setString(2, vehiculo.getModelo());
+            stmt.setInt(3, vehiculo.getYear());
+            stmt.setDouble(4, vehiculo.getCapacidadCarga());
+            stmt.setString(5, vehiculo.getEstado().name());
+            stmt.setInt(6, vehiculo.getId());
+            
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("UPDATE", "vehiculo", e);
+        }
+    }
+    
+    @Override
+    public boolean eliminar(Integer id) throws DataBaseException {
+        String sql = "DELETE FROM vehiculo WHERE id = ?";
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, id);
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+            
+        } catch (SQLException e) {
+            throw new DataBaseException("DELETE", "vehiculo", e);
+        }
+    }
+    
+    /**
+     * Mapea un ResultSet a un objeto Vehiculo
+     * @param rs ResultSet con los datos del vehículo
+     * @return Objeto Vehiculo mapeado
+     * @throws SQLException Si ocurre un error al leer el ResultSet
+     */
+    private Vehiculo mapearVehiculo(ResultSet rs) throws SQLException {
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setId(rs.getInt("id"));
+        vehiculo.setPlaca(rs.getString("placa"));
+        vehiculo.setMarca(rs.getString("marca"));
+        vehiculo.setModelo(rs.getString("modelo"));
+        vehiculo.setYear(rs.getInt("anio"));
+        vehiculo.setCapacidadCarga(rs.getDouble("capacidad_carga"));
+        vehiculo.setEstado(EstadoVehiculo.valueOf(rs.getString("estado")));
+        return vehiculo;
     }
 }
