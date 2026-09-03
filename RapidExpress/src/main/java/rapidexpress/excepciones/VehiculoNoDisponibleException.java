@@ -15,8 +15,8 @@ public class VehiculoNoDisponibleException extends Exception {
      * @param placa Placa del vehículo no disponible
      */
     public VehiculoNoDisponibleException(String placa) {
-        super("El vehículo con placa '" + placa + "' no está disponible. " +
-              "Verifique que esté en estado DISPONIBLE.");
+        super("El vehiculo con placa '" + placa + "' no esta disponible. " +
+              "Verifique que este en estado DISPONIBLE.");
         this.placa = placa;
     }
     
