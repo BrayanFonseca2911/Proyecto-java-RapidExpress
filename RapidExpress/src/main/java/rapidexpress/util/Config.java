@@ -1,73 +1,111 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.util;
 
-// Se agrega la importación de FileInputStream que faltaba
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Propósito: Cargar y proporcionar el acceso a los parámetros de conexión
- * de la base de datos a partir del archivo de propiedades del proyecto.
+ * Lee la configuración de la base de datos desde un archivo properties.
+ * Permite cambiar credenciales sin modificar el código fuente.
  * 
  * @author User
  */
 public class Config {
-
-    // Atributo estático que almacena las claves y valores del archivo de configuración.
+    
+    /** Objeto Properties para almacenar la configuración */
     private static Properties properties;
-
-    // Bloque de inicialización estático: se ejecuta una sola vez al cargar la clase en memoria.
+    
+    /** Nombre del archivo de configuración */
+    private static final String CONFIG_FILE = "database.properties";
+    
+    // Valores por defecto (se usan si no existe el archivo)
+    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/rapidexpress?useSSL=false&serverTimezone=UTC";
+    private static final String DEFAULT_USER = "root";
+    private static final String DEFAULT_PASSWORD = "";
+    private static final String DEFAULT_DRIVER = "com.mysql.cj.jdbc.Driver";
+    
+    /**
+     * Bloque estático que carga la configuración al iniciar la clase
+     */
     static {
-        // Inicializa el objeto Properties.
         properties = new Properties();
-        
-        // Se corrige el nombre a "DataBase.properties" respetando las mayúsculas del proyecto
-        try (InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("DataBase.properties")) {
-            
-            // Verifica si el recurso fue encontrado dentro del classpath.
-            if (input != null) {
-                // Carga los pares clave-valor dentro de la instancia de Properties.
-                properties.load(input);
-            } else {
-                // Intenta la lectura directa si no se encuentra en el classpath.
-                try (FileInputStream fileInput = new FileInputStream("DataBase.properties")) {
-                    properties.load(fileInput);
-                } catch (IOException e) {
-                    System.err.println("Error: No se encontró el archivo 'DataBase.properties'.");
-                }
-            }
-            
-        } catch (IOException ex) {
-            // Imprime la traza de la excepción en caso de falla de lectura de I/O.
-            ex.printStackTrace();
+        try {
+            // Intentar cargar desde el archivo de propiedades
+            FileInputStream fis = new FileInputStream(CONFIG_FILE);
+            properties.load(fis);
+            fis.close();
+            System.out.println("✅ Configuración cargada desde " + CONFIG_FILE);
+        } catch (IOException e) {
+            System.out.println("⚠️ No se encontró " + CONFIG_FILE + ", usando valores por defecto");
+            // Establecer valores por defecto
+            properties.setProperty("db.url", DEFAULT_URL);
+            properties.setProperty("db.user", DEFAULT_USER);
+            properties.setProperty("db.password", DEFAULT_PASSWORD);
+            properties.setProperty("db.driver", DEFAULT_DRIVER);
         }
     }
-
-    // Constructor privado para impedir que se creen instancias con 'new Config()'.
-    private Config() {}
-
-    // Retorna la URL de conexión a la base de datos (clave 'db.url').
+    
+    /**
+     * Obtiene la URL de conexión a la base de datos
+     * @return URL de conexión
+     */
     public static String getDbUrl() {
-        return properties.getProperty("db.url");
+        return properties.getProperty("db.url", DEFAULT_URL);
     }
-
-    // Retorna el usuario autenticado de la base de datos (clave 'db.user').
+    
+    /**
+     * Obtiene el usuario de la base de datos
+     * @return Nombre de usuario
+     */
     public static String getDbUser() {
-        return properties.getProperty("db.user");
+        return properties.getProperty("db.user", DEFAULT_USER);
     }
-
-    // Retorna la contraseña del usuario de la base de datos (clave 'db.password').
+    
+    /**
+     * Obtiene la contraseña de la base de datos
+     * @return Contraseña
+     */
     public static String getDbPassword() {
-        return properties.getProperty("db.password");
+        return properties.getProperty("db.password", DEFAULT_PASSWORD);
     }
-
-    // Retorna el nombre completo de la clase del Driver JDBC (clave 'db.driver').
+    
+    /**
+     * Obtiene el driver de la base de datos
+     * @return Nombre del driver
+     */
     public static String getDbDriver() {
-        return properties.getProperty("db.driver");
+        return properties.getProperty("db.driver", DEFAULT_DRIVER);
+    }
+    
+    /**
+     * Obtiene cualquier propiedad de configuración
+     * @param key Nombre de la propiedad
+     * @return Valor de la propiedad
+     */
+    public static String getProperty(String key) {
+        return properties.getProperty(key);
+    }
+    
+    /**
+     * Obtiene cualquier propiedad con valor por defecto
+     * @param key Nombre de la propiedad
+     * @param defaultValue Valor por defecto si no existe
+     * @return Valor de la propiedad
+     */
+    public static String getProperty(String key, String defaultValue) {
+        return properties.getProperty(key, defaultValue);
+    }
+    
+    /**
+     * Muestra la configuración actual (útil para debugging)
+     */
+    public static void mostrarConfiguracion() {
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║      CONFIGURACIÓN DE BASE DE DATOS    ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        System.out.println("URL: " + getDbUrl());
+        System.out.println("Usuario: " + getDbUser());
+        System.out.println("Password: " + (getDbPassword().isEmpty() ? "(vacío)" : "****"));
+        System.out.println("Driver: " + getDbDriver());
     }
 }

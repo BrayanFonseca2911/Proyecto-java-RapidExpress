@@ -1,71 +1,188 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.util;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 /**
- * Propósito: Proveer validaciones de expresiones regulares y lógica de negocio
- * para verificar la integridad de los datos de entrada en el sistema.
+ * Clase utilitaria para validaciones genéricas.
+ * Contiene métodos estáticos para validar diferentes tipos de datos.
  * 
  * @author User
  */
-
 public class Validator {
-
-    // Patrón Regex para placas vehiculares (ejemplo: ABC123 o ABC-123).
-    private static final String REGEX_PLACA = "^[A-Z]{3}-?[0-9]{3}$";
-
-    // Patrón Regex para documentos de identidad / cédulas (de 6 a 10 dígitos numéricos).
-    private static final String REGEX_CEDULA = "^[0-9]{6,10}$";
-
-    // Patrón Regex para números de seguimiento de paquetes (ejemplo: PKG-1001 o PKG1001).
-    private static final String REGEX_GUIA_SEGUIMIENTO = "^[A-Z]{3}-?[0-9]{4,8}$";
-
-    // Patrón Regex básico para validar formato de correo electrónico.
-    private static final String REGEX_EMAIL = "^[A-Za-z0-9+_.-]+@(.+)$";
-
-    // Constructor privado para impedir la instanciación de esta clase de utilidad.
-    private Validator() {}
-
-    // Evalúa si una cadena cumple con el formato de placa vehicular registrado en el sistema.
-    public static boolean esPlacaValida(String placa) {
-        // Retorna verdadero si no es nula y coincide con la regla de tres letras y tres números.
-        return placa != null && placa.trim().toUpperCase().matches(REGEX_PLACA);
+    
+    /** Patrón para validar emails */
+    private static final Pattern PATRON_EMAIL = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
+    
+    /** Patrón para validar teléfonos (10-15 dígitos) */
+    private static final Pattern PATRON_TELEFONO = Pattern.compile(
+        "^[0-9]{10,15}$"
+    );
+    
+    /** Patrón para validar placas (formato ABC-123 o ABC123) */
+    private static final Pattern PATRON_PLACA = Pattern.compile(
+        "^[A-Z]{3}-?[0-9]{3}$"
+    );
+    
+    /** Patrón para validar números de identificación (8-15 dígitos) */
+    private static final Pattern PATRON_IDENTIFICACION = Pattern.compile(
+        "^[0-9]{8,15}$"
+    );
+    
+    /**
+     * Valida si un string no es nulo ni vacío
+     * @param texto Texto a validar
+     * @return true si el texto es válido
+     */
+    public static boolean noVacio(String texto) {
+        return texto != null && !texto.trim().isEmpty();
     }
-
-    // Comprueba si un documento de identidad contiene únicamente entre 6 y 10 dígitos numéricos.
-    public static boolean esCedulaValida(String cedula) {
-        // Retorna verdadero si no es nulo y cumple con la longitud y formato numérico.
-        return cedula != null && cedula.trim().matches(REGEX_CEDULA);
+    
+    /**
+     * Valida si un string es nulo o vacío
+     * @param texto Texto a validar
+     * @return true si el texto está vacío
+     */
+    public static boolean esVacio(String texto) {
+        return texto == null || texto.trim().isEmpty();
     }
-
-    // Verifica si un número de seguimiento cumple con la nomenclatura estándar del paquete.
-    public static boolean esGuiaValida(String guia) {
-        // Valida que el código de seguimiento coincida con el patrón de prefijo y números.
-        return guia != null && guia.trim().toUpperCase().matches(REGEX_GUIA_SEGUIMIENTO);
-    }
-
-    // Evalúa si una dirección de correo electrónico posee un formato válido.
+    
+    /**
+     * Valida un formato de email
+     * @param email Email a validar
+     * @return true si el email es válido
+     */
     public static boolean esEmailValido(String email) {
-        // Retorna verdadero si no es nulo y estructura adecuadamente el usuario y dominio.
-        return email != null && email.trim().matches(REGEX_EMAIL);
+        if (esVacio(email)) {
+            return false;
+        }
+        Matcher matcher = PATRON_EMAIL.matcher(email.trim());
+        return matcher.matches();
     }
-
-    // Comprueba si una cadena ingresada representa un número decimal estrictamente mayor a cero.
-    public static boolean esNumeroPositivo(String texto) {
-        // Si el texto es nulo o está vacío, descarta la validación inmediatamente.
-        if (texto == null || texto.trim().isEmpty()) {
+    
+    /**
+     * Valida un formato de teléfono
+     * @param telefono Teléfono a validar
+     * @return true si el teléfono es válido
+     */
+    public static boolean esTelefonoValido(String telefono) {
+        if (esVacio(telefono)) {
             return false;
         }
-        try {
-            // Intenta convertir la cadena ingresada a un tipo numérico de punto flotante.
-            double valor = Double.parseDouble(texto.trim());
-            // Retorna verdadero únicamente si el valor superpasa el cero.
-            return valor > 0;
-        } catch (NumberFormatException e) {
-            // Retorna falso en caso de que la cadena contenga letras o caracteres no válidos.
+        Matcher matcher = PATRON_TELEFONO.matcher(telefono.trim());
+        return matcher.matches();
+    }
+    
+    /**
+     * Valida un formato de placa de vehículo
+     * @param placa Placa a validar
+     * @return true si la placa es válida
+     */
+    public static boolean esPlacaValida(String placa) {
+        if (esVacio(placa)) {
             return false;
         }
+        Matcher matcher = PATRON_PLACA.matcher(placa.trim().toUpperCase());
+        return matcher.matches();
+    }
+    
+    /**
+     * Valida un número de identificación
+     * @param identificacion Número a validar
+     * @return true si es válido
+     */
+    public static boolean esIdentificacionValida(String identificacion) {
+        if (esVacio(identificacion)) {
+            return false;
+        }
+        Matcher matcher = PATRON_IDENTIFICACION.matcher(identificacion.trim());
+        return matcher.matches();
+    }
+    
+    /**
+     * Valida que un número sea positivo
+     * @param numero Número a validar
+     * @return true si es positivo
+     */
+    public static boolean esPositivo(double numero) {
+        return numero > 0;
+    }
+    
+    /**
+     * Valida que un número sea positivo o cero
+     * @param numero Número a validar
+     * @return true si es positivo o cero
+     */
+    public static boolean esPositivoOCero(double numero) {
+        return numero >= 0;
+    }
+    
+    /**
+     * Valida que un número esté en un rango
+     * @param numero Número a validar
+     * @param minimo Valor mínimo
+     * @param maximo Valor máximo
+     * @return true si está en el rango
+     */
+    public static boolean estaEnRango(double numero, double minimo, double maximo) {
+        return numero >= minimo && numero <= maximo;
+    }
+    
+    /**
+     * Valida que un año sea razonable
+     * @param anio Año a validar
+     * @return true si el año es válido
+     */
+    public static boolean esAnioValido(int anio) {
+        return anio >= 1900 && anio <= DateUtil.anioActual() + 1;
+    }
+    
+    /**
+     * Valida que un peso sea razonable (entre 0.1 y 10000 kg)
+     * @param peso Peso a validar
+     * @return true si el peso es válido
+     */
+    public static boolean esPesoValido(double peso) {
+        return peso >= 0.1 && peso <= 10000;
+    }
+    
+    /**
+     * Valida que una capacidad de carga sea razonable
+     * @param capacidad Capacidad a validar
+     * @return true si es válida
+     */
+    public static boolean esCapacidadValida(double capacidad) {
+        return capacidad >= 100 && capacidad <= 50000;
+    }
+    
+    /**
+     * Valida un tipo de licencia de conducir
+     * @param licencia Tipo de licencia
+     * @return true si es válida
+     */
+    public static boolean esLicenciaValida(String licencia) {
+        if (esVacio(licencia)) {
+            return false;
+        }
+        String licenciaMayus = licencia.trim().toUpperCase();
+        return licenciaMayus.matches("^[A-E][0-9]?$");
+    }
+    
+    /**
+     * Trunca un string a una longitud máxima
+     * @param texto Texto a truncar
+     * @param longitudMaxima Longitud máxima
+     * @return Texto truncado con "..." si excede
+     */
+    public static String truncar(String texto, int longitudMaxima) {
+        if (texto == null) {
+            return null;
+        }
+        if (texto.length() <= longitudMaxima) {
+            return texto;
+        }
+        return texto.substring(0, longitudMaxima - 3) + "...";
     }
 }

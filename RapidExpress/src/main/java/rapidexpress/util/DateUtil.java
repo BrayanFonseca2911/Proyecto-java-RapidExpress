@@ -1,69 +1,211 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package rapidexpress.util;
 
-// Importación para manipular fechas sin hora (Año-Mes-Día).
-import java.time.LocalDate;
-// Importación para manipular fechas con hora (Año-Mes-Día Hora:Minuto:Segundo).
 import java.time.LocalDateTime;
-// Importación para aplicar formatos personalizados a objetos de fecha.
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-// Importación para capturar errores cuando el texto no coincide con el formato esperado.
 import java.time.format.DateTimeParseException;
 
 /**
- * Propósito: Ofrecer métodos utilitarios estáticos para la conversión y 
- * formateo de fechas en la interfaz de usuario y las capas de persistencia.
+ * Clase utilitaria para operaciones con fechas y horas.
+ * Usa la API moderna de Java (java.time) en lugar de java.util.Date.
  * 
  * @author User
  */
 public class DateUtil {
-
-    // Patrón de formato estándar para fechas cortas (ej. 25/12/2026).
+    
+    /** Formateador para fechas cortas (dd/MM/yyyy) */
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-    // Patrón de formato para fechas completas con hora (ej. 25/12/2026 14:30:00).
+    
+    /** Formateador para fechas y horas (dd/MM/yyyy HH:mm:ss) */
     private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-
-    // Constructor privado para impedir la creación de instancias de esta clase de utilidad.
-    private DateUtil() {}
-
-    // Transforma un objeto LocalDate a su representación en texto formateado (dd/MM/yyyy).
+    
+    /** Formateador para fechas ISO (yyyy-MM-dd) */
+    private static final DateTimeFormatter FORMATO_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    /** Formateador para horas (HH:mm:ss) */
+    private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm:ss");
+    
+    /**
+     * Obtiene la fecha y hora actual
+     * @return Fecha y hora actual
+     */
+    public static LocalDateTime ahora() {
+        return LocalDateTime.now();
+    }
+    
+    /**
+     * Obtiene solo la fecha actual (sin hora)
+     * @return Fecha actual
+     */
+    public static LocalDate hoy() {
+        return LocalDate.now();
+    }
+    
+    /**
+     * Formatea una fecha en formato corto (dd/MM/yyyy)
+     * @param fecha Fecha a formatear
+     * @return Fecha en formato string
+     */
     public static String formatearFecha(LocalDate fecha) {
-        // Retorna una cadena vacía si el objeto de fecha es nulo.
-        if (fecha == null) return "";
-        // Aplica el formato dd/MM/yyyy sobre la fecha recibida.
+        if (fecha == null) {
+            return "Sin fecha";
+        }
         return fecha.format(FORMATO_FECHA);
     }
-
-    // Transforma un objeto LocalDateTime a su representación en texto formateado con hora.
-    public static String formatearFechaHora(LocalDateTime fechaHora) {
-        // Retorna una cadena vacía si el objeto de fecha y hora es nulo.
-        if (fechaHora == null) return "";
-        // Aplica el formato dd/MM/yyyy HH:mm:ss sobre el objeto recibido.
-        return fechaHora.format(FORMATO_FECHA_HORA);
-    }
-
-    // Convierte un texto ingresado por el usuario (dd/MM/yyyy) a un objeto LocalDate.
-    public static LocalDate parsearFecha(String textoFecha) {
-        // Verifica si la cadena es nula o está vacía para evitar errores de análisis.
-        if (textoFecha == null || textoFecha.trim().isEmpty()) {
-            return null;
+    
+    /**
+     * Formatea una fecha y hora en formato largo (dd/MM/yyyy HH:mm:ss)
+     * @param fecha Fecha y hora a formatear
+     * @return Fecha y hora en formato string
+     */
+    public static String formatearFechaHora(LocalDateTime fecha) {
+        if (fecha == null) {
+            return "Sin fecha";
         }
+        return fecha.format(FORMATO_FECHA_HORA);
+    }
+    
+    /**
+     * Formatea una fecha en formato ISO (yyyy-MM-dd)
+     * @param fecha Fecha a formatear
+     * @return Fecha en formato ISO
+     */
+    public static String formatearISO(LocalDate fecha) {
+        if (fecha == null) {
+            return "Sin fecha";
+        }
+        return fecha.format(FORMATO_ISO);
+    }
+    
+    /**
+     * Convierte un string en formato "dd/MM/yyyy" a LocalDate
+     * @param fechaString String con la fecha
+     * @return Objeto LocalDate
+     * @throws IllegalArgumentException Si el formato es inválido
+     */
+    public static LocalDate parsearFecha(String fechaString) {
+        if (fechaString == null || fechaString.trim().isEmpty()) {
+            throw new IllegalArgumentException("La fecha no puede estar vacía");
+        }
+        
         try {
-            // Convierte el texto al objeto LocalDate según el patrón configurado.
-            return LocalDate.parse(textoFecha.trim(), FORMATO_FECHA);
+            return LocalDate.parse(fechaString.trim(), FORMATO_FECHA);
         } catch (DateTimeParseException e) {
-            // Retorna nulo en caso de que el formato ingresado sea inválido.
-            return null;
+            throw new IllegalArgumentException("Formato de fecha inválido. Use: dd/MM/yyyy");
         }
     }
-
-    // Valida si un texto ingresado cumple exactamente con el formato dd/MM/yyyy.
-    public static boolean esFechaValida(String textoFecha) {
-        // Retorna verdadero únicamente si el método parsearFecha no produce un valor nulo.
-        return parsearFecha(textoFecha) != null;
+    
+    /**
+     * Convierte un string en formato "dd/MM/yyyy HH:mm:ss" a LocalDateTime
+     * @param fechaHoraString String con la fecha y hora
+     * @return Objeto LocalDateTime
+     * @throws IllegalArgumentException Si el formato es inválido
+     */
+    public static LocalDateTime parsearFechaHora(String fechaHoraString) {
+        if (fechaHoraString == null || fechaHoraString.trim().isEmpty()) {
+            throw new IllegalArgumentException("La fecha y hora no pueden estar vacías");
+        }
+        
+        try {
+            return LocalDateTime.parse(fechaHoraString.trim(), FORMATO_FECHA_HORA);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Formato inválido. Use: dd/MM/yyyy HH:mm:ss");
+        }
+    }
+    
+    /**
+     * Suma días a una fecha
+     * @param fecha Fecha base
+     * @param dias Días a sumar (puede ser negativo para restar)
+     * @return Nueva fecha con los días sumados
+     */
+    public static LocalDate sumarDias(LocalDate fecha, int dias) {
+        if (fecha == null) {
+            return null;
+        }
+        return fecha.plusDays(dias);
+    }
+    
+    /**
+     * Suma horas a una fecha y hora
+     * @param fecha Fecha base
+     * @param horas Horas a sumar
+     * @return Nueva fecha y hora
+     */
+    public static LocalDateTime sumarHoras(LocalDateTime fecha, long horas) {
+        if (fecha == null) {
+            return null;
+        }
+        return fecha.plusHours(horas);
+    }
+    
+    /**
+     * Calcula la diferencia en días entre dos fechas
+     * @param fechaInicio Fecha de inicio
+     * @param fechaFin Fecha de fin
+     * @return Número de días entre las fechas (puede ser negativo)
+     */
+    public static long diasEntre(LocalDate fechaInicio, LocalDate fechaFin) {
+        if (fechaInicio == null || fechaFin == null) {
+            return 0;
+        }
+        return java.time.temporal.ChronoUnit.DAYS.between(fechaInicio, fechaFin);
+    }
+    
+    /**
+     * Verifica si una fecha está entre dos fechas (inclusive)
+     * @param fecha Fecha a verificar
+     * @param inicio Fecha de inicio del rango
+     * @param fin Fecha de fin del rango
+     * @return true si la fecha está en el rango
+     */
+    public static boolean estaEntre(LocalDate fecha, LocalDate inicio, LocalDate fin) {
+        if (fecha == null || inicio == null || fin == null) {
+            return false;
+        }
+        return !fecha.isBefore(inicio) && !fecha.isAfter(fin);
+    }
+    
+    /**
+     * Verifica si una fecha es anterior a otra
+     * @param fecha1 Primera fecha
+     * @param fecha2 Segunda fecha
+     * @return true si fecha1 es anterior a fecha2
+     */
+    public static boolean esAnterior(LocalDate fecha1, LocalDate fecha2) {
+        if (fecha1 == null || fecha2 == null) {
+            return false;
+        }
+        return fecha1.isBefore(fecha2);
+    }
+    
+    /**
+     * Verifica si una fecha es posterior a otra
+     * @param fecha1 Primera fecha
+     * @param fecha2 Segunda fecha
+     * @return true si fecha1 es posterior a fecha2
+     */
+    public static boolean esPosterior(LocalDate fecha1, LocalDate fecha2) {
+        if (fecha1 == null || fecha2 == null) {
+            return false;
+        }
+        return fecha1.isAfter(fecha2);
+    }
+    
+    /**
+     * Obtiene el año actual
+     * @return Año actual
+     */
+    public static int anioActual() {
+        return LocalDate.now().getYear();
+    }
+    
+    /**
+     * Valida si un año es razonable (entre 1900 y año actual + 1)
+     * @param anio Año a validar
+     * @return true si el año es válido
+     */
+    public static boolean esAnioValido(int anio) {
+        return anio >= 1900 && anio <= anioActual() + 1;
     }
 }
