@@ -276,9 +276,9 @@ public void validarPesoVsCapacidad(Paquete paquete, Vehiculo vehiculo) throws Da
     }
 }
 
-================================================================================
+
 3. CONTAR PAQUETES POR ESTADO (REPORTE SIMPLE - MUY PROBABLE)
-================================================================================
+==============
 
 // En IPaqueteDAO.java - Agregar al interface:
 int contarPorEstado(EstadoPaquete estado) throws DataBaseException;
@@ -330,9 +330,9 @@ public void mostrarResumenPaquetes() {
     }
 }
 
-================================================================================
+
 4. ASIGNAR PAQUETE A RUTA (RELACIÓN ENTRE ENTIDADES - PROBABLE)
-================================================================================
+=====================
 
 // En IRutaDAO.java - Agregar al interface:
 boolean asignarPaquete(Integer rutaId, Integer paqueteId) throws DataBaseException;
@@ -382,9 +382,9 @@ public void asignarPaqueteARuta(String trackingId, Integer rutaId)
                       "Se asignó paquete a ruta ID: " + rutaId);
 }
 
-================================================================================
+
 5. FILTRAR CONDUCTORES POR TIPO DE LICENCIA (FILTRO - PROBABLE)
-================================================================================
+========
 
 // En IConductorDAO.java - Agregar al interface:
 List<Conductor> buscarPorTipoLicencia(String tipoLicencia) throws DataBaseException;
@@ -421,9 +421,9 @@ public List<Conductor> filtrarPorTipoLicencia(String tipoLicencia) throws DataBa
     return conductorDAO.buscarPorTipoLicencia(tipoLicencia.trim());
 }
 
-================================================================================
+
 6. CAMBIAR ESTADO DE CONDUCTOR A INACTIVO Y LIBERAR VEHÍCULO (PROBABLE)
-================================================================================
+========
 
 // En ConductorService.java - Agregar nuevo método:
 public void darDeBajaConductor(String numeroIdentificacion)
@@ -450,9 +450,9 @@ public void darDeBajaConductor(String numeroIdentificacion)
                       "Se dio de baja al conductor: " + numeroIdentificacion);
 }
 
-================================================================================
+
 7. CALCULAR COSTO DE ENVÍO (MÉTODO DE UTILIDAD - PROBABLE)
-================================================================================
+========
 
 // En Paquete.java - Agregar método:
 public double calcularCostoEnvio(double costoPorKilo, double costoPorDistancia) {
@@ -475,9 +475,9 @@ public double calcularCostoEnvioSimple(double tarifaBase, double costoPorKilo) {
     return tarifaBase + (this.peso * costoPorKilo);
 }
 
-================================================================================
+
 8. LISTAR VEHÍCULOS DISPONIBLES VS EN MANTENIMIENTO (REPORTE - PROBABLE)
-================================================================================
+====
 
 // En VehiculoService.java - Agregar método:
 public Map<String, Integer> obtenerResumenEstadoVehiculos() throws DataBaseException {
@@ -515,9 +515,9 @@ public Map<String, Integer> obtenerResumenEstadoVehiculos() throws DataBaseExcep
     return resumen;
 }
 
-================================================================================
+
 9. ORDENAR PAQUETES POR FECHA DE REGISTRO (ORDENAMIENTO - PROBABLE)
-================================================================================
+========
 
 // En PaqueteService.java - Agregar método:
 public List<Paquete> listarPaquetesOrdenadosPorFecha() throws DataBaseException {
@@ -540,9 +540,8 @@ public List<Paquete> listarPaquetesOrdenadosPorFechaStream() throws DataBaseExce
         .collect(Collectors.toList());
 }
 
-================================================================================
 10. IMPEDIR ELIMINAR PAQUETE SI ESTÁ EN TRANSITO O ENTREGADO (VALIDACIÓN)
-================================================================================
+===========
 
 // En PaqueteService.java - Agregar método:
 public void eliminarPaquete(String trackingId)
@@ -569,9 +568,8 @@ public void eliminarPaquete(String trackingId)
                       "Se eliminó paquete: " + trackingId);
 }
 
-================================================================================
 IMPORTANTE: IMPORTS NECESARIOS
-================================================================================
+====
 
 // Agrega estos imports según necesites en cada archivo:
 
@@ -586,9 +584,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-================================================================================
+
 RECOMENDACIONES
-================================================================================
+========
 
 1. Lee cuidadosamente lo que te pide el profesor
 2. Identifica en qué capa va la funcionalidad:
