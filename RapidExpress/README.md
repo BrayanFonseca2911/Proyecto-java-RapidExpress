@@ -607,6 +607,94 @@ RECOMENDACIONES
    - ¿Es una validación? → Agrega if con throw DataBaseException
    - ¿Es un reporte? → Usa streams o ciclos para contar/agrupar
    - ¿Es cambiar estado? → Busca la entidad, valida, actualiza
+  
+Implementar la funcionalidad de manejo de archivos (exportar a .txt y .json) en tu proyecto RapidExpress:
+Código para agregar en PaqueteService.java
+Imports necesarios:
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+METODOS PARA EXPORTAR:
+// FUNCIONALIDAD 1: Exportar a JSON
+public void exportarPaquetesAJson(List<Paquete> paquetes, String nombreArchivo) {
+    String rutaCompleta = "reportes/" + nombreArchivo; 
+    
+    try {
+        Files.createDirectories(Paths.get("reportes"));
+        
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(rutaCompleta))) {
+            writer.write("[\n");
+            
+            for (int i = 0; i < paquetes.size(); i++) {
+                Paquete p = paquetes.get(i);
+                writer.write("  {\n");
+                writer.write("    \"id\": \"" + p.getId() + "\",\n");
+                writer.write("    \"destinatario\": \"" + p.getDestinatario() + "\",\n");
+                writer.write("    \"peso\": " + p.getPeso() + ",\n");
+                writer.write("    \"estado\": \"" + p.getEstado() + "\"\n");
+                writer.write("  }");
+                
+                if (i < paquetes.size() - 1) {
+                    writer.write(",\n");
+                } else {
+                    writer.write("\n");
+                }
+            }
+            
+            writer.write("]");
+        }
+        System.out.println("✅ Archivo JSON generado exitosamente en: " + rutaCompleta);
+        
+    } catch (IOException e) {
+        System.err.println("❌ Error al escribir el archivo JSON: " + e.getMessage());
+        throw new RuntimeException("No se pudo generar el reporte", e);
+    }
+}
+
+// FUNCIONALIDAD 2: Exportar a TXT
+public void exportarReporteTexto(List<Paquete> paquetes, String nombreArchivo) {
+    String rutaCompleta = "reportes/" + nombreArchivo;
+    
+    try {
+        Files.createDirectories(Paths.get("reportes"));
+        
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(rutaCompleta))) {
+            writer.write("=== REPORTE DE PAQUETES RAPIDEXPRESS ===\n");
+            writer.write("Fecha: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + "\n");
+            writer.write("Total paquetes: " + paquetes.size() + "\n");
+            writer.write("=======================================\n\n");
+            
+            for (Paquete p : paquetes) {
+                writer.write("ID: " + p.getId() + " | Dest: " + p.getDestinatario());
+                writer.write(" | Peso: " + p.getPeso() + "kg | Estado: " + p.getEstado() + "\n");
+            }
+            
+            writer.write("\n=== FIN DEL REPORTE ===");
+        }
+        System.out.println("✅ Archivo TXT generado exitosamente en: " + rutaCompleta);
+        
+    } catch (IOException e) {
+        System.err.println("❌ Error al escribir el archivo TXT: " + e.getMessage());
+        throw new RuntimeException("No se pudo generar el reporte", e);
+    }
+}
+
+METODO PARA LLAMAR EN EL CONTROLLER
+public void generarReportes() {
+    List<Paquete> todosLosPaquetes = paqueteDAO.listarTodos();
+    String fechaHoy = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    
+    paqueteService.exportarPaquetesAJson(todosLosPaquetes, "paquetes_" + fechaHoy + ".json");
+    paqueteService.exportarReporteTexto(todosLosPaquetes, "reporte_" + fechaHoy + ".txt");
+    
+    System.out.println("Proceso de exportación finalizado.");
+}
 
 ## Autores
 
