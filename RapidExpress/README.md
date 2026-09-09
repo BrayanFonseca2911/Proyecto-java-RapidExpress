@@ -181,6 +181,433 @@ Toda operacion critica (creacion de paquetes, inicio/fin de ruta, cambios de
 estado) queda registrada en `auditoria.log`, en la raiz desde donde se
 ejecuta la aplicacion.
 
+================================================================================
+1. BÚSQUEDA DE PAQUETES POR DESTINATARIO (MUY PROBABLE)
+================================================================================
+
+// En IPaqueteDAO.java - Agregar este método al interface:
+List<Paquete> buscarPorDestinatario(String nombreDestinatario) throws DataBaseException;
+
+// En PaqueteDAO.java - Implementación:
+@Override
+public List<Paquete> buscarPorDestinatario(String nombreDestinatario) throws DataBaseException {
+    List<Paquete> paquetes = new ArrayList<>();
+    String sql = "SELECT * FROM paquetes WHERE LOWER(destinatario_nombre) LIKE LOWER(?)";
+
+    try (Connection conn = DBConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, "%" + nombreDestinatario + "%");
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            Paquete paquete = mapearResultSet(rs);
+            paquetes.add(paquete);
+        }
+    } catch (SQLException e) {
+        throw new DataBaseException("Error al buscar paquetes por destinatario: " + e.getMessage(), e);
+    }
+
+    return paquetes;
+}
+
+// En PaqueteService.java - Agregar método público:
+public List<Paquete> buscarPorDestinatario(String nombreDestinatario) throws DataBaseException {
+    if (nombreDestinatario == null || nombreDestinatario.trim().isEmpty()) {
+        throw new DataBaseException("El nombre del destinatario es obligatorio");
+    }
+
+    List<Paquete> resultados = paqueteDAO.buscarPorDestinatario(nombreDestinatario.trim());
+
+    registrarAuditoria("READ", "PAQUETE", "BUSQUEDA",
+                      "Se buscaron paquetes por destinatario: " + nombreDestinatario);
+
+    return resultados;
+}
+
+// En PaqueteController.java - Método para usar desde la vista:
+public void mostrarPaquetesPorDestinatario() {
+    try {
+        System.out.print("Ingrese nombre del destinatario: ");
+        String nombre = scanner.nextLine();
+
+        List<Paquete> paquetes = paqueteService.buscarPorDestinatario(nombre);
+
+        if (paquetes.isEmpty()) {
+            System.out.println("No se encontraron paquetes para ese destinatario.");
+        } else {
+            System.out.println("\n=== PAQUETES ENCONTRADOS ===");
+            for (Paquete p : paquetes) {
+                System.out.println(p);
+            }
+        }
+    } catch (DataBaseException e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
+
+================================================================================
+2. VALIDAR PESO DEL PAQUETE VS CAPACIDAD DEL VEHÍCULO (MUY PROBABLE)
+================================================================================
+
+// En Paquete.java - Agregar método de utilidad:
+public boolean puedeSerTransportadoPor(Vehiculo vehiculo) {
+    if (vehiculo == null) {
+        return false;
+    }
+    return this.peso <= vehiculo.getCapacidadCarga();
+}
+
+// En PaqueteService.java - Agregar método con validación:
+public void validarPesoVsCapacidad(Paquete paquete, Vehiculo vehiculo) throws DataBaseException, CapacidadExcedidaException {
+    if (paquete == null) {
+        throw new DataBaseException("El paquete no puede ser nulo");
+    }
+
+    if (vehiculo == null) {
+        throw new DataBaseException("El vehículo no puede ser nulo");
+    }
+
+    if (!paquete.puedeSerTransportadoPor(vehiculo)) {
+        throw new CapacidadExcedidaException(
+            "El peso del paquete (" + paquete.getPeso() + " kg) excede la capacidad del vehículo " +
+            vehiculo.getPlaca() + " (" + vehiculo.getCapacidadCarga() + " kg)"
+        );
+    }
+}
+
+================================================================================
+3. CONTAR PAQUETES POR ESTADO (REPORTE SIMPLE - MUY PROBABLE)
+================================================================================
+
+// En IPaqueteDAO.java - Agregar al interface:
+int contarPorEstado(EstadoPaquete estado) throws DataBaseException;
+
+// En PaqueteDAO.java - Implementación:
+@Override
+public int contarPorEstado(EstadoPaquete estado) throws DataBaseException {
+    String sql = "SELECT COUNT(*) as total FROM paquetes WHERE estado = ?";
+
+    try (Connection conn = DBConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, estado.name());
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getInt("total");
+        }
+    } catch (SQLException e) {
+        throw new DataBaseException("Error al contar paquetes por estado: " + e.getMessage(), e);
+    }
+
+    return 0;
+}
+
+// En PaqueteService.java - Método público:
+public Map<String, Integer> obtenerConteoPaquetesPorEstado() throws DataBaseException {
+    Map<String, Integer> conteo = new HashMap<>();
+
+    for (EstadoPaquete estado : EstadoPaquete.values()) {
+        int cantidad = paqueteDAO.contarPorEstado(estado);
+        conteo.put(estado.getDescripcion(), cantidad);
+    }
+
+    return conteo;
+}
+
+// Uso desde el main o controller:
+public void mostrarResumenPaquetes() {
+    try {
+        Map<String, Integer> resumen = paqueteService.obtenerConteoPaquetesPorEstado();
+
+        System.out.println("\n=== RESUMEN DE PAQUETES ===");
+        for (Map.Entry<String, Integer> entry : resumen.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+    } catch (DataBaseException e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
+
+================================================================================
+4. ASIGNAR PAQUETE A RUTA (RELACIÓN ENTRE ENTIDADES - PROBABLE)
+================================================================================
+
+// En IRutaDAO.java - Agregar al interface:
+boolean asignarPaquete(Integer rutaId, Integer paqueteId) throws DataBaseException;
+
+// En RutaDAO.java - Implementación:
+@Override
+public boolean asignarPaquete(Integer rutaId, Integer paqueteId) throws DataBaseException {
+    String sql = "UPDATE paquetes SET ruta_id = ?, estado = 'ASIGNADO_A_RUTA' WHERE id = ?";
+
+    try (Connection conn = DBConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, rutaId);
+        stmt.setInt(2, paqueteId);
+
+        int filasAfectadas = stmt.executeUpdate();
+        return filasAfectadas > 0;
+    } catch (SQLException e) {
+        throw new DataBaseException("Error al asignar paquete a ruta: " + e.getMessage(), e);
+    }
+}
+
+// En RutaService.java - Método completo con validaciones:
+public void asignarPaqueteARuta(String trackingId, Integer rutaId)
+        throws DataBaseException, PaqueteNotFoundException, RutaInvalidaException {
+
+    // Buscar paquete
+    Paquete paquete = paqueteDAO.buscarPorTrackingId(trackingId);
+    if (paquete == null) {
+        throw new PaqueteNotFoundException(trackingId);
+    }
+
+    // Validar que el paquete esté en bodega
+    if (!paquete.enBodega()) {
+        throw new RutaInvalidaException("El paquete no está en bodega, estado actual: " + paquete.getEstado());
+    }
+
+    // Asignar a ruta
+    rutaDAO.asignarPaquete(rutaId, paquete.getId());
+
+    // Actualizar estado del paquete
+    paquete.setEstado(EstadoPaquete.ASIGNADO_A_RUTA);
+    paqueteDAO.actualizar(paquete);
+
+    // Auditoría
+    registrarAuditoria("UPDATE", "PAQUETE", trackingId,
+                      "Se asignó paquete a ruta ID: " + rutaId);
+}
+
+================================================================================
+5. FILTRAR CONDUCTORES POR TIPO DE LICENCIA (FILTRO - PROBABLE)
+================================================================================
+
+// En IConductorDAO.java - Agregar al interface:
+List<Conductor> buscarPorTipoLicencia(String tipoLicencia) throws DataBaseException;
+
+// En ConductorDAO.java - Implementación:
+@Override
+public List<Conductor> buscarPorTipoLicencia(String tipoLicencia) throws DataBaseException {
+    List<Conductor> conductores = new ArrayList<>();
+    String sql = "SELECT * FROM conductores WHERE LOWER(tipo_licencia) = LOWER(?)";
+
+    try (Connection conn = DBConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, tipoLicencia);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            Conductor conductor = mapearResultSet(rs);
+            conductores.add(conductor);
+        }
+    } catch (SQLException e) {
+        throw new DataBaseException("Error al buscar conductores por licencia: " + e.getMessage(), e);
+    }
+
+    return conductores;
+}
+
+// En ConductorService.java - Método público:
+public List<Conductor> filtrarPorTipoLicencia(String tipoLicencia) throws DataBaseException {
+    if (tipoLicencia == null || tipoLicencia.trim().isEmpty()) {
+        throw new DataBaseException("El tipo de licencia es obligatorio");
+    }
+
+    return conductorDAO.buscarPorTipoLicencia(tipoLicencia.trim());
+}
+
+================================================================================
+6. CAMBIAR ESTADO DE CONDUCTOR A INACTIVO Y LIBERAR VEHÍCULO (PROBABLE)
+================================================================================
+
+// En ConductorService.java - Agregar nuevo método:
+public void darDeBajaConductor(String numeroIdentificacion)
+        throws DataBaseException, ConductorNoDisponibleException {
+
+    // Buscar conductor
+    Conductor conductor = conductorDAO.buscarPorNumeroIdentificacion(numeroIdentificacion);
+    if (conductor == null) {
+        throw new ConductorNoDisponibleException("No existe conductor con identificacion: " + numeroIdentificacion);
+    }
+
+    // Si tiene vehículo asignado, liberarlo
+    if (conductor.getVehiculoAsignado() != null) {
+        conductorDAO.liberarVehiculo(conductor.getId());
+        conductor.setVehiculoAsignado(null);
+    }
+
+    // Cambiar estado a INACTIVO
+    conductor.setEstado(EstadoConductor.INACTIVO);
+    conductorDAO.actualizar(conductor);
+
+    // Auditoría
+    registrarAuditoria("UPDATE", "CONDUCTOR", String.valueOf(conductor.getId()),
+                      "Se dio de baja al conductor: " + numeroIdentificacion);
+}
+
+================================================================================
+7. CALCULAR COSTO DE ENVÍO (MÉTODO DE UTILIDAD - PROBABLE)
+================================================================================
+
+// En Paquete.java - Agregar método:
+public double calcularCostoEnvio(double costoPorKilo, double costoPorDistancia) {
+    if (costoPorKilo <= 0 || costoPorDistancia <= 0) {
+        throw new IllegalArgumentException("Los costos deben ser mayores a cero");
+    }
+
+    // Calcular distancia aproximada (simplificado)
+    double distancia = Math.abs(this.origen.hashCode() - this.destino.hashCode()) % 1000;
+
+    return (this.peso * costoPorKilo) + (distancia * costoPorDistancia);
+}
+
+// O versión simplificada:
+public double calcularCostoEnvioSimple(double tarifaBase, double costoPorKilo) {
+    if (tarifaBase < 0 || costoPorKilo < 0) {
+        throw new IllegalArgumentException("Las tarifas no pueden ser negativas");
+    }
+
+    return tarifaBase + (this.peso * costoPorKilo);
+}
+
+================================================================================
+8. LISTAR VEHÍCULOS DISPONIBLES VS EN MANTENIMIENTO (REPORTE - PROBABLE)
+================================================================================
+
+// En VehiculoService.java - Agregar método:
+public Map<String, Integer> obtenerResumenEstadoVehiculos() throws DataBaseException {
+    Map<String, Integer> resumen = new HashMap<>();
+
+    List<Vehiculo> todos = vehiculoDAO.listarTodos();
+
+    int disponibles = 0;
+    int enRuta = 0;
+    int mantenimiento = 0;
+    int inactivos = 0;
+
+    for (Vehiculo v : todos) {
+        switch (v.getEstado()) {
+            case DISPONIBLE:
+                disponibles++;
+                break;
+            case EN_RUTA:
+                enRuta++;
+                break;
+            case EN_MANTENIMIENTO:
+                mantenimiento++;
+                break;
+            case INACTIVO:
+                inactivos++;
+                break;
+        }
+    }
+
+    resumen.put("Disponibles", disponibles);
+    resumen.put("En Ruta", enRuta);
+    resumen.put("En Mantenimiento", mantenimiento);
+    resumen.put("Inactivos", inactivos);
+
+    return resumen;
+}
+
+================================================================================
+9. ORDENAR PAQUETES POR FECHA DE REGISTRO (ORDENAMIENTO - PROBABLE)
+================================================================================
+
+// En PaqueteService.java - Agregar método:
+public List<Paquete> listarPaquetesOrdenadosPorFecha() throws DataBaseException {
+    List<Paquete> paquetes = paqueteDAO.listarTodos();
+
+    // Ordenar por fecha de registro (más reciente primero)
+    paquetes.sort((p1, p2) -> {
+        if (p1.getFechaRegistro() == null) return 1;
+        if (p2.getFechaRegistro() == null) return -1;
+        return p2.getFechaRegistro().compareTo(p1.getFechaRegistro());
+    });
+
+    return paquetes;
+}
+
+// O usando Stream API (más moderno):
+public List<Paquete> listarPaquetesOrdenadosPorFechaStream() throws DataBaseException {
+    return paqueteDAO.listarTodos().stream()
+        .sorted(Comparator.comparing(Paquete::getFechaRegistro, Comparator.nullsLast(Comparator.reverseOrder())))
+        .collect(Collectors.toList());
+}
+
+================================================================================
+10. IMPEDIR ELIMINAR PAQUETE SI ESTÁ EN TRANSITO O ENTREGADO (VALIDACIÓN)
+================================================================================
+
+// En PaqueteService.java - Agregar método:
+public void eliminarPaquete(String trackingId)
+        throws DataBaseException, PaqueteNotFoundException {
+
+    Paquete paquete = paqueteDAO.buscarPorTrackingId(trackingId);
+    if (paquete == null) {
+        throw new PaqueteNotFoundException(trackingId);
+    }
+
+    // Validar que no esté en estados protegidos
+    if (paquete.enTransito() || paquete.entregado()) {
+        throw new DataBaseException(
+            "No se puede eliminar un paquete que está en tránsito o entregado. " +
+            "Estado actual: " + paquete.getEstado()
+        );
+    }
+
+    // Eliminar (si tu DAO tiene el método)
+    paqueteDAO.eliminar(paquete.getId());
+
+    // Auditoría
+    registrarAuditoria("DELETE", "PAQUETE", trackingId,
+                      "Se eliminó paquete: " + trackingId);
+}
+
+================================================================================
+IMPORTANTE: IMPORTS NECESARIOS
+================================================================================
+
+// Agrega estos imports según necesites en cada archivo:
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+================================================================================
+RECOMENDACIONES
+================================================================================
+
+1. Lee cuidadosamente lo que te pide el profesor
+2. Identifica en qué capa va la funcionalidad:
+   - Dominio: Métodos de negocio en las clases (Paquete.java, Conductor.java, etc.)
+   - Servicio: Lógica con validaciones (PaqueteService.java, etc.)
+   - Repositorio: Acceso a base de datos (PaqueteDAO.java, etc.)
+   - Controlador: Interacción con usuario (PaqueteController.java, etc.)
+
+3. Sigue el patrón que ya usa tu proyecto:
+   - Validar datos primero
+   - Ejecutar operación
+   - Registrar auditoría
+
+4. Si te piden algo que no está en esta lista, piensa:
+   - ¿Es una búsqueda? → Agrega método en DAO y Service
+   - ¿Es una validación? → Agrega if con throw DataBaseException
+   - ¿Es un reporte? → Usa streams o ciclos para contar/agrupar
+   - ¿Es cambiar estado? → Busca la entidad, valida, actualiza
+
 ## Autores
 
 - Brayan Fonseca ([@BrayanFonseca2911](https://github.com/BrayanFonseca2911))
