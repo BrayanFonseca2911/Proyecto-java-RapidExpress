@@ -181,7 +181,6 @@ Toda operacion critica (creacion de paquetes, inicio/fin de ruta, cambios de
 estado) queda registrada en `auditoria.log`, en la raiz desde donde se
 ejecuta la aplicacion.
 
-## Autores
+## Autor
 
 - Brayan Fonseca ([@BrayanFonseca2911](https://github.com/BrayanFonseca2911))
-- Yeison Pallares ([@ypd651](https://github.com/ypd651))
